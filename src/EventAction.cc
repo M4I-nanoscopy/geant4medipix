@@ -57,19 +57,8 @@ EventAction::EventAction() : G4UserEventAction(),
     digitizerName(""),
     fEnergyPerEvent(0)
 {
-    G4RunManager *fRM = G4RunManager::GetRunManager();
-    DetectorConstructionBase *myDet = (DetectorConstructionBase *)(fRM->GetUserDetectorConstruction());
 
-    digitizerName = myDet->GetDigitizerName();
-
-    G4DigiManager *digiManager = G4DigiManager::GetDMpointer();
-
-    //build the digitizer
-    if (digitizerName == "WFDigitizer") {
-        DigitizerWeightField *wfDigitizer = new DigitizerWeightField("WFDigitizer");
-        digiManager->AddNewModule(wfDigitizer);
-    }
-
+    count = 0;
 
 }
 
@@ -114,6 +103,22 @@ void EventAction::PrintEventStatistics(G4double sensorEdep,
 
 void EventAction::BeginOfEventAction(const G4Event *event)
 {
+    if (count < 1) {
+        G4RunManager *fRM = G4RunManager::GetRunManager();
+        DetectorConstructionBase *myDet = (DetectorConstructionBase *)(fRM->GetUserDetectorConstruction());
+
+        digitizerName = myDet->GetDigitizerName();
+
+        G4DigiManager *digiManager = G4DigiManager::GetDMpointer();
+
+        //build the digitizer
+        if (digitizerName == "WFDigitizer") {
+            DigitizerWeightField *wfDigitizer = new DigitizerWeightField("WFDigitizer");
+            digiManager->AddNewModule(wfDigitizer);
+        }
+        count++;
+
+    }
     G4int eventID = event->GetEventID();
     if (eventID % fPrintModulo == 0 && eventID != 0) {
         G4cout << "\n---> Begin of event: " << eventID << G4endl;

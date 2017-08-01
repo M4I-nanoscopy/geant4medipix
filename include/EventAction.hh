@@ -95,7 +95,7 @@ private:
     G4String digitizerName;
     // energy per event
     G4double fEnergyPerEvent;
-
+    G4int count;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

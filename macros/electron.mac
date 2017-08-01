@@ -40,7 +40,7 @@
 #
 ## Configure sensor
 #
-/Sensor/material      G4_GALLIUM_ARSENIDE
+/Sensor/material      G4_Si
 /Sensor/thickness     300 um
 /Sensor/pixels        11
 /Sensor/pixelSize     55 um

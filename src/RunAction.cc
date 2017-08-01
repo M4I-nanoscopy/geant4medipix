@@ -27,6 +27,9 @@
 /// \file src/RunAction.cc
 /// \brief Implementation of the RunAction class
 
+#include <DetectorConstructionBase.hh>
+#include <G4DigiManager.hh>
+#include <DigitizerWeightField.hh>
 #include "RunAction.hh"
 #include "DetectorHit.hh"
 #include "DetectorSD.hh"
@@ -91,6 +94,7 @@ void RunAction::BeginOfRunAction(const G4Run *)
 {
     if (isMaster)
         timer->Start();
+
 
     // create histogram file
     G4AnalysisManager *analysisManager =  G4AnalysisManager::Instance();
