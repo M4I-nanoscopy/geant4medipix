@@ -7,7 +7,7 @@
 # electron 50 MeV in direction (0.,0.,1.)
 # 1 event with tracking/verbose
 #
-/control/verbose 0
+/control/verbose 2
 /tracking/verbose 0
 /run/verbose 0
 #
@@ -19,7 +19,7 @@
 
 /Sensor/phys/addPhysics emstandard_opt3
 
-/Detector/type Timepix 
+/Detector/type Timepix3
 
 /Timepix/mode PC
 /Timepix/threshold 3 keV
@@ -42,7 +42,7 @@
 #
 /Sensor/material      G4_Si
 /Sensor/thickness     300 um
-/Sensor/pixels        256
+/Sensor/pixels        11
 /Sensor/pixelSize     55 um
 /Sensor/Update
 
@@ -62,14 +62,14 @@
 # point source in the center towards the detector
 /gps/particle e-
 #/gps/pos/type Point
-/gps/energy 0.156 MeV
+/gps/energy 0.2 MeV
 /gps/pos/type Plane
 /gps/pos/shape Square
-/gps/pos/halfx 14000 um
-/gps/pos/halfy 14000 um
+/gps/pos/halfx 22.5 um
+/gps/pos/halfy 22.5 um
 
-/gps/pos/centre 0. 0. -5. cm
-/gps/direction  0 0 1
+/gps/pos/centre 0. 0. 5. cm
+/gps/direction  0 0 -1
 
-/run/beamOn 10
+/run/beamOn 2
 

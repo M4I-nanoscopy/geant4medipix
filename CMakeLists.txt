@@ -49,21 +49,23 @@ endif()
 find_package(Boost COMPONENTS system filesystem REQUIRED)
 
 # CADMesh
-#find_package(cadmesh)
+# find_package(cadmesh)
 
 # Include the HDF5 library
-#find_package(HDF5 COMPONENTS CXX)
-#if(HDF5_FOUND)
-#  option(WITH_HDF5 "HDF5 output enabled" ${HDF5_FOUND})
-#  add_definitions(-DWITH_HDF5)
-#  include_directories(${HDF5_CXX_INCLUDE_DIR})
-#  add_definitions(${HDF5_hdf5_LIBRARY})
-#  set(LIBS ${LIBS} ${HDF5_hdf5_cpp_LIBRARY})
-#endif()
 
-find_package(HDF5)
-include_directories(${HDF5_INCLUDE_DIR})
-set(hdf5_libs hdf5_serial hdf5_cpp hdf5_hl_cpp)
+find_package(HDF5 COMPONENTS CXX)
+if(HDF5_FOUND)
+  option(WITH_HDF5 "HDF5 output enabled" ${HDF5_FOUND})
+  add_definitions(-DWITH_HDF5)
+  include_directories(${HDF5_CXX_INCLUDE_DIR})
+  #add_definitions(${HDF5_hdf5_LIBRARY})
+  set(hdf5_libs hdf5_serial hdf5_cpp hdf5_hl_cpp)
+#  set(LIBS ${LIBS} ${HDF5_hdf5_cpp_LIBRARY})
+endif()
+
+#find_package(HDF5 COMPONENTS CXX)
+#include_directories(${HDF5_CXX_INCLUDE_DIR})
+
 
 
 #----------------------------------------------------------------------------
@@ -83,7 +85,7 @@ file(GLOB headers ${PROJECT_SOURCE_DIR}/include/*.hh)
 #----------------------------------------------------------------------------
 # Add the executable, and link it to the Geant4 libraries
 #
-add_executable(G4Medipix G4Medipix.cc ${sources} ${headers})
+add_executable(G4Medipix G4Medipix.cc ${sources} ${headers} include/OutputMessenger.hh)
 if(HDF5_FOUND)
   target_link_libraries(G4Medipix ${HDF5_hdf5_cpp_LIBRARY})
   target_link_libraries(G4Medipix ${HDF5_hdf5_LIBRARY})

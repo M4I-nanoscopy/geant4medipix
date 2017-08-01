@@ -58,6 +58,8 @@ DetectorMessenger::DetectorMessenger(DetectorConstructionBase *Det)
         matList += (*matTbl)[i]->GetName();
         matList += " ";
     }
+    matList += "G4_GALLIUM_ARSENIDE";
+    matList += " ";
 
     //---------------------------------------------------------------------------- Sensor
     pSensorMatCmd = new G4UIcmdWithAString("/Sensor/material", this);

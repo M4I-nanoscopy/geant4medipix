@@ -50,7 +50,8 @@
 
 RunAction::RunAction()
     : G4UserRunAction(),
-      histoManager(0)
+      histoManager(0),
+      name("output.hdf5")
 {
 #ifdef WITH_HDF5
     G4String name;
@@ -63,6 +64,7 @@ RunAction::RunAction()
 
 }
 
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 RunAction::~RunAction()
@@ -71,8 +73,27 @@ RunAction::~RunAction()
     delete fMessenger; // TODO check if ok to kill here
 #endif
     delete histoManager;
+    delete traj;
+    delete file;
 
 }
+
+void RunAction::InitFile(G4double d) {
+    file = GetOutputFile();
+    traj = new Group( file->createGroup( "/trajectories" ));
+    //G4double energy = d*1000;
+    //G4double height = currentHeight*1000000;
+    //G4String mat = currentMaterial;
+    //StrType str_type(PredType::C_S1, H5T_VARIABLE);
+    //DataSpace dspace(H5S_SCALAR);
+    //Attribute att_energy = traj->createAttribute("beam_energy",PredType::NATIVE_DOUBLE,dspace);
+    //Attribute att_height = traj->createAttribute("sensor_height",PredType::NATIVE_DOUBLE,dspace);
+    //Attribute att_mat = traj->createAttribute("sensor_material",str_type,dspace);
+    //att_energy.write(PredType::NATIVE_DOUBLE,&energy);
+    //att_height.write(PredType::NATIVE_DOUBLE,&height);
+    //att_mat.write(str_type,&mat);
+}
+
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -125,4 +146,25 @@ void RunAction::EndOfRunAction(const G4Run *aRun)
         analysisManager->Write();
         analysisManager->CloseFile();
     }
+}
+
+void RunAction::SetName(G4String st)
+{
+	name = st;
+}
+
+G4String RunAction::GetName()
+{
+	return name;
+}
+
+H5File *RunAction::GetOutputFile() {
+
+  if ( file == nullptr )   {
+
+	  file = new H5File(name.c_str(), H5F_ACC_TRUNC);
+
+  }
+
+  return file;
 }
