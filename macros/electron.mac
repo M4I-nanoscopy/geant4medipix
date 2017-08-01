@@ -29,7 +29,7 @@
 #
 ## configure output
 #
-#/Output/edep electron.h5
+/Output/edep electron.h5
 /Output/config electron
 /Output/sparse electron
 
@@ -40,7 +40,7 @@
 #
 ## Configure sensor
 #
-/Sensor/material      G4_Si
+/Sensor/material      G4_GALLIUM_ARSENIDE
 /Sensor/thickness     300 um
 /Sensor/pixels        11
 /Sensor/pixelSize     55 um

@@ -194,6 +194,7 @@ void DetectorConstructionBase::DefineMaterials()
     nistManager->FindOrBuildMaterial("G4_SILICON_DIOXIDE");
     nistManager->FindOrBuildMaterial("G4_AIR");
     nistManager->FindOrBuildMaterial("G4_Np");
+    nistManager->FindOrBuildMaterial("G4_GALLIUM_ARSENIDE");
 
     //Additional materials
     G4double z, a, fractionmass, density;

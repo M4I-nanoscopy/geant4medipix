@@ -55,6 +55,7 @@
 #include "G4UIExecutive.hh"
 #endif
 
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 namespace
@@ -181,7 +182,6 @@ int main(int argc, char **argv)
     delete visManager;
 #endif
     delete runManager;
-
     return 0;
 }
 

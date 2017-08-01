@@ -85,7 +85,7 @@ file(GLOB headers ${PROJECT_SOURCE_DIR}/include/*.hh)
 #----------------------------------------------------------------------------
 # Add the executable, and link it to the Geant4 libraries
 #
-add_executable(G4Medipix G4Medipix.cc ${sources} ${headers} include/OutputMessenger.hh)
+add_executable(G4Medipix G4Medipix.cc ${sources} ${headers})
 if(HDF5_FOUND)
   target_link_libraries(G4Medipix ${HDF5_hdf5_cpp_LIBRARY})
   target_link_libraries(G4Medipix ${HDF5_hdf5_LIBRARY})

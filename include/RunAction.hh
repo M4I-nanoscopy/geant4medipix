@@ -55,19 +55,12 @@ public:
     virtual G4Run *GenerateRun();
     virtual void   BeginOfRunAction(const G4Run *);
     virtual void   EndOfRunAction(const G4Run *);
-    H5File* GetOutputFile();
-    void SetName(G4String st);
-    G4String GetName();
-    void InitFile(G4double d);
 
 private:
     G4Timer *timer;
     MpxDetector* detector;
     HistoManager* histoManager;
     G4GenericMessenger* fMessenger;
-    H5File*file = nullptr;
-    Group* traj = nullptr;
-    G4String name;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

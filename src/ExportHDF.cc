@@ -65,7 +65,7 @@ ExportHDF::ExportHDF()
     //writeModulo = 1000;	//TODO now in Run.cc!!!
 //     filename 	= "Medipix.h5";
     filename    = "Medipix.h5";
-    entryName   = "Medipix";
+    entryName   = "trajectories";
     counter 	= 1;
     
 //     DefineCommands();
@@ -77,7 +77,7 @@ ExportHDF::ExportHDF(G4String name)
     HitsCollectionCopy = new DetectorHitsCollection();
     lastEvent   = 0;
     
-    entryName   = "Medipix";
+    entryName   = "trajectories";
     counter     = 1;
 }
 
