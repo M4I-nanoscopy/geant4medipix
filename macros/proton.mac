@@ -1,0 +1,60 @@
+# Macro file for example Geant4medipix
+# 
+# Can be run in batch, without graphic
+# or interactively: Idle> /control/execute run1.mac
+#
+# Default kinematics: 
+# electron 50 MeV in direction (0.,0.,1.)
+# 1 event with tracking/verbose
+#
+/control/verbose 0
+/tracking/verbose 0
+/run/verbose 0
+#
+#
+##########################
+# Set detector properties
+#
+
+
+/Sensor/phys/addPhysics emstandard_opt3
+#/Sensor/phys/addPhysics livermore
+/Detector/type Timepix 
+
+/Timepix/mode PC
+/Timepix/threshold 3.5 keV
+
+/Detector/digitizer WFDigitizer
+
+
+#/Output/edep proton.h5
+/Output/sparse proton.xyc
+/analysis/setFileName proton 
+
+/run/setCut  1 um
+/Sensor/material      G4_Si
+/Sensor/thickness     300 um
+/Sensor/pixels        256 
+/Sensor/pixelSize     55 um
+/Sensor/Update
+
+/analysis/h1/set 1 300  0.  300 um #edep profile
+/analysis/h1/set 2 200  0. 5.1 MeV #edep spectrum
+/analysis/h1/set 3 200  0. 300 um  # track length
+/analysis/h1/set 4 200  0. 10 um #edep spectrum
+
+/run/initialize
+#/process/inactivate msc
+
+## General Particle Source
+#
+# point source in the center towards the detector
+/gps/particle proton 
+/gps/pos/type Point
+/gps/energy 7.0 MeV
+
+/gps/pos/centre 27.5 27.5 -5000. um
+/gps/direction  0 0 1
+
+/run/beamOn 10000
+

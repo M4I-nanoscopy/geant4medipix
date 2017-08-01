@@ -1,0 +1,83 @@
+# Macro file for example Geant4medipix
+# 
+# Can be run in batch, without graphic
+# or interactively: Idle> /control/execute run1.mac
+#
+# Standard XRF setup with metal plate, detector and x-ray source
+# in a 90 degree angle
+#
+
+
+/control/verbose 0
+/tracking/verbose 0
+/run/verbose 0
+#
+#
+##########################
+# Set detector properties
+#
+
+
+/Sensor/phys/addPhysics emstandard_opt3
+/Detector/type          Timepix 
+/Detector/digitizer     WFDigitizer
+/Detector/csm		true
+/Timepix/mode           PC
+/Timepix/threshold   	1 keV
+
+
+#/Output/config gamma
+#/Output/edep gamma.h5
+# sparse output before THL
+/Output/sparse gamma.xyc
+#/Output/frames gamma.tpx
+
+/run/setCut    10 um
+#/run/setCutForAGivenParticle gamma  100 um
+
+/Sensor/material        G4_Si
+/Sensor/thickness       300 um
+/Sensor/pixels          120
+/Sensor/pixelSize       55 um
+/Sensor/rotation 0
+/Sensor/Update
+
+/Bumps/use false
+/Bumps/radii 20 um
+/Bumps/height 10 um
+/Bumps/material G4_Fe
+#/Chip/use true
+
+/Filter/use true
+/Filter/material G4_Cu
+/Filter/thickness 1 mm
+/Filter/z 0.5 cm
+/Filter/rotation 45
+
+
+/run/initialize
+
+## General Particle Source
+#
+/gps/particle gamma
+/gps/energy 10 keV
+/gps/pos/type Plane
+/gps/pos/centre 0. -2. -0.5. cm
+
+/gps/pos/shape Square
+/gps/pos/halfx 0.47 cm
+/gps/pos/halfy 0.47 cm
+
+/gps/pos/rot2 0. 0. 1
+/gps/ang/type beam1d
+/gps/ang/sigma_r 0. deg
+
+/gps/direction 0 1 0
+
+#disable multiple scattering
+#/process/inactivate msc
+
+/run/beamOn 10
+
+
+#/vis/scene/add/axes 0 0 0 300 um

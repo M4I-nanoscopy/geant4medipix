@@ -1,0 +1,58 @@
+# Macro file for example Geant4medipix
+# Sets up the sensor and digitizer 
+# then runs a dacscan
+
+/tracking/verbose 0
+/run/verbose 0
+
+##########################
+# Set detector properties
+/run/setCuts 1 um
+/Medipix/phys/addPhysics emstandard_opt3
+/Medipix/setDigitizer       MpxDigitizer
+/Medipix/setSensorMat       G4_Si
+/Medipix/setSensorThickness 300 um
+/Medipix/setNbPixel         128 
+/Medipix/setPixelSize       55 um
+/Medipix/Update
+
+
+
+
+#-----------Medipix3RX---------------
+#/Medipix/setDetectorType Medipix3RX
+#/Medipix/setThreshold4 20 keV
+
+#--------------Timepix--------------
+/Medipix/setDetectorType Timepix
+/Timepix/setMode PC
+/Timepix/setThreshold 3 keV
+
+/run/initialize
+
+#---------------GPS---------------------
+/gps/particle gamma
+/gps/energy 15 keV
+/gps/pos/type Plane
+/gps/pos/centre 0. 0. -5. cm
+
+/gps/pos/shape Square
+/gps/pos/halfx 0.4 cm
+/gps/pos/halfy 0.4 cm
+/gps/pos/rot1 1 0 0
+/gps/pos/rot2 0 1 0
+/gps/ang/rot1 0 1 0
+/gps/ang/rot2 1 0 0
+/gps/ang/type beam1d
+/gps/ang/sigma_r 0. deg
+
+
+#---------------File output--------------
+/Medipix/export/setHDF5file hdfexport1.h5
+/Medipix/setOutputFilename scan
+
+/Medipix/gun/setNumberOfFrames 1
+/Medipix/dacscan/particles 30000
+/Medipix/dacscan/step 0.5
+/Medipix/dacscan/run 10 20
+

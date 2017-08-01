@@ -1,0 +1,63 @@
+# Macro file for example Geant4medipix
+# 
+# Can be run in batch, without graphic
+# or interactively: Idle> /control/execute run1.mac
+#
+# Default kinematics: 
+# electron 50 MeV in direction (0.,0.,1.)
+# 1 event with tracking/verbose
+#
+
+/control/verbose 0
+/tracking/verbose 0
+/run/verbose 0
+#
+#
+##########################
+# Set detector properties
+#
+
+/Sensor/phys/addPhysics emstandard_opt3
+/Detector/type          Timepix 
+#/Detector/digitizer     WFDigitizer
+/Timepix/mode           PC
+/Timepix/threshold   3.5 keV
+
+
+/Output/config gamma
+#/Output/edep gamma.h5
+# sparse output before THL
+/Output/sparse gamma.xyc
+#/Output/frames gamma.tpx
+
+/run/setCut    10 um
+#/run/setCutForAGivenParticle gamma  100 um
+
+/Sensor/material        G4_Si
+/Sensor/thickness       300 um
+/Sensor/pixels          10
+/Sensor/pixelSize       55 um
+/Sensor/rotation 0
+/Sensor/Update
+
+/Bumps/use false
+/Bumps/radii 20 um
+/Bumps/height 10 um
+/Bumps/material G4_Fe
+#/Chip/use true
+/Filter/use false
+
+/run/initialize
+/analysis/setFileName gamma
+/analysis/h1/set 1 300  0.  300 um #edep profile
+/analysis/h1/set 2 200  0. 21. keV #edep spectrum
+/analysis/h1/set 3 200  0. 21. keV #edep spectrum
+# General Particle Source
+/gps/particle ion
+/gps/ion 95 241
+/gps/ene/type Mono
+/gps/ene/mono 0.0 MeV
+/gps/pos/centre 0. 0. -2. cm
+/gps/direction 0 0 1
+
+/run/beamOn 5

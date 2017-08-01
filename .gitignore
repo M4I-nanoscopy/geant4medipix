@@ -1,0 +1,16 @@
+*.kdev4
+*.out
+.cccc
+# might be different on other systems
+src/.kdev_include_paths
+# don't push the build directory
+build
+*.kate-swp
+.kdev_include_paths
+*.user
+*_
+latex
+html
+*~
+cmake-build-debug/
+.idea

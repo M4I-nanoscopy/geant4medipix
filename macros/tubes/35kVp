@@ -1,0 +1,42 @@
+/gps/particle gamma
+/gps/ene/type Arb
+/gps/hist/type arb
+/gps/hist/point 0.001 0.0
+/gps/hist/point 0.002 0.0
+/gps/hist/point 0.003 0.0
+/gps/hist/point 0.004 0.0
+/gps/hist/point 0.005 0.0
+/gps/hist/point 0.006 0.0
+/gps/hist/point 0.007 0.0
+/gps/hist/point 0.008 0.0
+/gps/hist/point 0.009 0.0
+/gps/hist/point 0.01 0.0003158927
+/gps/hist/point 0.011 0.03001797
+/gps/hist/point 0.012 0.4988789
+/gps/hist/point 0.013 5.342233
+/gps/hist/point 0.014 30.93807
+/gps/hist/point 0.015 113.7245
+/gps/hist/point 0.016 313.7852
+/gps/hist/point 0.017 664.1829
+/gps/hist/point 0.018 1216.066
+/gps/hist/point 0.019 1832.916
+/gps/hist/point 0.02 2740.562
+/gps/hist/point 0.021 3472.845
+/gps/hist/point 0.022 4397.394
+/gps/hist/point 0.023 4907.84
+/gps/hist/point 0.024 5462.01
+/gps/hist/point 0.025 5600.438
+/gps/hist/point 0.026 5500.213
+/gps/hist/point 0.027 5133.88
+/gps/hist/point 0.028 4609.827
+/gps/hist/point 0.029 4411.907
+/gps/hist/point 0.03 4155.124
+/gps/hist/point 0.031 3992.061
+/gps/hist/point 0.032 3398.035
+/gps/hist/point 0.033 2664.336
+/gps/hist/point 0.034 1869.325
+/gps/hist/point 0.035 924.4083
+/gps/hist/point 0.036 0.0
+/gps/hist/point 0.037 0.0
+/gps/hist/point 0.038 0.0
+/gps/hist/inter Lin
