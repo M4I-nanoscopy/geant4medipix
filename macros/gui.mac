@@ -43,4 +43,4 @@
 #/Medipix/event/setPrintModulo 100
 #
 # User defined icon :
-/gui/addIcon "Run beam on" user_icon "/run/beamOn 1" run.png 
+/gui/addIcon "Run electron beam on" user_icon "/control/execute electron.mac" run.png

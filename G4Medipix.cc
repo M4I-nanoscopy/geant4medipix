@@ -39,7 +39,9 @@
 #ifdef G4MULTITHREADED
 #include "G4MTRunManager.hh"
 #else
+
 #include "G4RunManager.hh"
+
 #endif
 
 #include "G4UImanager.hh"
@@ -48,31 +50,32 @@
 #include "Randomize.hh"
 
 #ifdef G4VIS_USE
+
 #include "G4VisExecutive.hh"
+
 #endif
 
 #ifdef G4UI_USE
+
 #include "G4UIExecutive.hh"
+
 #endif
 
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-namespace
-{
-void PrintUsage()
-{
-    G4cerr << " Usage: " << G4endl;
-    G4cerr << " example [-m macro ] [-u UIsession] [-t nThreads]" << G4endl;
-    G4cerr << "   note: -t option is available only for multi-threaded mode."
-           << G4endl;
-}
+namespace {
+    void PrintUsage() {
+        G4cerr << " Usage: " << G4endl;
+        G4cerr << " example [-m macro ] [-u UIsession] [-t nThreads]" << G4endl;
+        G4cerr << "   note: -t option is available only for multi-threaded mode."
+               << G4endl;
+    }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
     // Evaluate arguments
     //
     if (argc > 7) {
@@ -89,9 +92,9 @@ int main(int argc, char **argv)
         if (G4String(argv[i]) == "-m") macro = argv[i + 1];
         else if (G4String(argv[i]) == "-u") session = argv[i + 1];
 #ifdef G4MULTITHREADED
-        else if (G4String(argv[i]) == "-t") {
-            nThreads = G4UIcommand::ConvertToInt(argv[i + 1]);
-        }
+            else if (G4String(argv[i]) == "-t") {
+                nThreads = G4UIcommand::ConvertToInt(argv[i + 1]);
+            }
 #endif
         else {
             PrintUsage();
@@ -102,7 +105,7 @@ int main(int argc, char **argv)
     // Choose the Random engine
     //
     CLHEP::HepRandom::setTheEngine(new CLHEP::RanecuEngine());
-    
+
 //     std::fstream randomFile;
 //     randomFile.open("/dev/urandom", std::ios::in | std::ios::binary);
 //     unsigned int seed;
@@ -112,13 +115,14 @@ int main(int argc, char **argv)
 //     G4cout << "Random seed is: " << seed << G4endl;
 //     G4cout << "=========================================" << G4endl;
 //     CLHEP::HepRandom::setTheSeed(seed);
-    G4int seed = time( NULL );
-      //possibility to set an offset to random number via environment variable "JOB_ID"
-      char * jobID = getenv ("JOB_ID");
-      if (jobID!=NULL)
-           seed += atoi(jobID)*4852234*G4UniformRand();
+
+    G4int seed = time(NULL);
+    //possibility to set an offset to random number via environment variable "JOB_ID"
+    char *jobID = getenv("JOB_ID");
+    if (jobID != nullptr)
+        seed += atoi(jobID) * 4852234 * G4UniformRand();
     //G4cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << seed << G4endl;
-    G4Random::setTheSeed( seed );
+    G4Random::setTheSeed(seed);
 
     // Construct the default run manager
     //
@@ -153,11 +157,11 @@ int main(int argc, char **argv)
     // Get the pointer to the User Interface manager
     G4UImanager *UImanager = G4UImanager::GetUIpointer();
 
-    if (macro.size()) {
+    if (!macro.empty()) {
         // batch mode
         G4String command = "/control/execute ";
         UImanager->ApplyCommand(command + macro);
-    } else  {
+    } else {
         // interactive mode : define UI session
 #ifdef G4UI_USE
         G4UIExecutive *ui = new G4UIExecutive(argc, argv, session);
