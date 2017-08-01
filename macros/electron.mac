@@ -32,6 +32,7 @@
 /Output/edep electron.h5
 /Output/config electron
 /Output/sparse electron
+/Output/frames frames
 
 #
 ## Set cuts
@@ -71,5 +72,5 @@
 /gps/pos/centre 0. 0. 5. cm
 /gps/direction  0 0 -1
 
-/run/beamOn 40
+/run/beamOn 1
 

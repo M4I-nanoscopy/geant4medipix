@@ -95,6 +95,16 @@ void RunAction::BeginOfRunAction(const G4Run *)
     if (isMaster)
         timer->Start();
 
+    // Build the digitizer
+    G4RunManager *fRM = G4RunManager::GetRunManager();
+    DetectorConstructionBase *myDet = (DetectorConstructionBase *)(fRM->GetUserDetectorConstruction());
+    G4String digitizerName = myDet->GetDigitizerName();
+    G4DigiManager *digiManager = G4DigiManager::GetDMpointer();
+
+    if (digitizerName == "WFDigitizer") {
+        DigitizerWeightField *wfDigitizer = new DigitizerWeightField("WFDigitizer");
+        digiManager->AddNewModule(wfDigitizer);
+    }
 
     // create histogram file
     G4AnalysisManager *analysisManager =  G4AnalysisManager::Instance();

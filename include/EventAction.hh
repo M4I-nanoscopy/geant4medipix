@@ -91,8 +91,6 @@ private:
      */
     G4int  fSensorHCID; //FIXME can be removed !?
     G4int  fPrintModulo;
-    // the name of the digitizer
-    G4String digitizerName;
     // energy per event
     G4double fEnergyPerEvent;
     G4int count;
