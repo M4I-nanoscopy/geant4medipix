@@ -72,5 +72,5 @@
 /gps/pos/centre 0. 0. 5. cm
 /gps/direction  0 0 -1
 
-/run/beamOn 1
+/run/beamOn 3
 

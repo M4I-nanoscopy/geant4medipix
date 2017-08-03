@@ -146,12 +146,6 @@ void ExportHDF::AddEnergyPerPixel(DetectorHitsCollection *HitsCollection, G4int 
 
 void ExportHDF::Write(G4String dataSetName, G4int event)
 {
-    //label conversion
-    std::stringstream out;
-    out << event;
-    G4String currentEvent = out.str();
-    G4String tableName = dataSetName + currentEvent;
-
     G4int LENGTH = HitsCollectionCopy->GetSize();
     G4int RANK = 1;
 
@@ -172,32 +166,59 @@ void ExportHDF::Write(G4String dataSetName, G4int event)
 
     //typedef struct s1_t  s1_t;
 
-    s1_t *s1 = new s1_t[LENGTH];
+    G4int sizes[event + 1];
+    G4int ev;
+    G4int comp=0;
+    G4int cnter=0;
+    //fill with data
+    for (G4int i = 0; i < LENGTH; i++) {
+        DetectorHit *sensorHit = (*HitsCollectionCopy)[i];
+        ev = sensorHit->GetEvent();
+        if (ev > comp) {
+            sizes[comp] = cnter;
+            comp = ev;
+            cnter = 0;
+        }
+        cnter++;
+    }
+    sizes[event] = cnter;
+
+    G4int sum_sizes[event + 1];
+    for (G4int i = 0; i < event + 1; i++) {
+        if (i==0) sum_sizes[i] = sizes[i];
+        else sum_sizes[i] = sum_sizes[i-1] + sizes[i];
+    }
+
+    s1_t **s1;
+    s1 = (s1_t**) malloc((event + 1)*sizeof(s1_t*));
+    for (G4int i = 0; i < event + 1; i++) {
+        s1[i] = (s1_t*) malloc(sizes[i]*sizeof(s1_t));
+    }
+
+
     hid_t      s1_tid;     // File datatype identifier
 
 
     hid_t      file, dataset, space, faplist_id; /* Handles */
-    //herr_t     status;
-    hsize_t    dim[] = { (long long unsigned int) LENGTH};   /* Dataspace dimensions */
 
 
     //fill with data
-    for (G4int i = 0; i < LENGTH; i++) {
-        DetectorHit *sensorHit = (*HitsCollectionCopy) [i];
-
-        s1[i].event	= sensorHit->GetEvent();
-        s1[i].column 	= sensorHit->GetColumn();
-        s1[i].line 	= sensorHit->GetLine();
-        s1[i].x 	= sensorHit->GetPosition().x();
-        s1[i].y 	= sensorHit->GetPosition().y();
-        s1[i].z 	= sensorHit->GetPosition().z();
-        s1[i].particle 	= sensorHit->GetParticleID();							//FIXME
-        s1[i].tracklength = sensorHit->GetTrackLength();                 //GetTime() / ns;
-        s1[i].energy = sensorHit->GetEdep() / keV; //save in keV
+    for (G4int i = 0; i < event + 1; i++) {
+        for (G4int j = 0; j < sizes[i]; j++) {
+            DetectorHit *sensorHit;
+            if (i==0) sensorHit = (*HitsCollectionCopy)[j];
+            else sensorHit = (*HitsCollectionCopy)[sum_sizes[i-1] + j];s1[i][j].event = sensorHit->GetEvent();
+            s1[i][j].column = sensorHit->GetColumn();
+            s1[i][j].line = sensorHit->GetLine();
+            s1[i][j].x = sensorHit->GetPosition().x();
+            s1[i][j].y = sensorHit->GetPosition().y();
+            s1[i][j].z = sensorHit->GetPosition().z();
+            s1[i][j].particle = sensorHit->GetParticleID();                            //FIXME
+            s1[i][j].tracklength = sensorHit->GetTrackLength();                 //GetTime() / ns;
+            s1[i][j].energy = sensorHit->GetEdep() / keV; //save in keV
+        }
     }
 
-    //dataSpace
-    space = H5Screate_simple(RANK, dim, NULL);
 
     //get file
     try {
@@ -210,33 +231,59 @@ void ExportHDF::Write(G4String dataSetName, G4int event)
         file 	= H5Fcreate(filename.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
     }
 
-    //create Datatype
-    s1_tid = H5Tcreate(H5T_COMPOUND, sizeof(s1_t));
-    H5Tinsert(s1_tid, "Event", HOFFSET(s1_t, event), H5T_NATIVE_INT);
-    H5Tinsert(s1_tid, "Column", HOFFSET(s1_t, column), H5T_NATIVE_INT);
-    H5Tinsert(s1_tid, "Line", HOFFSET(s1_t, line), H5T_NATIVE_INT);
-    H5Tinsert(s1_tid, "X", HOFFSET(s1_t, x), H5T_NATIVE_DOUBLE);
-    H5Tinsert(s1_tid, "Y", HOFFSET(s1_t, y), H5T_NATIVE_DOUBLE);
-    H5Tinsert(s1_tid, "Z", HOFFSET(s1_t, z), H5T_NATIVE_DOUBLE);
-    H5Tinsert(s1_tid, "particle", HOFFSET(s1_t, particle), H5T_NATIVE_INT);
-    H5Tinsert(s1_tid, "tracklength", HOFFSET(s1_t, tracklength), H5T_NATIVE_DOUBLE);
-    H5Tinsert(s1_tid, "energy", HOFFSET(s1_t, energy), H5T_NATIVE_DOUBLE);
+    H5Gcreate1(file,"/trajectories",sizeof(file));
+    //StrType str_type(PredType::C_S1, H5T_VARIABLE);
+    //DataSpace dspace(H5S_SCALAR);
 
-    //throws error when dataset already exists! maybe errorhandling.
-    dataset 	= H5Dcreate(file, tableName, s1_tid, space, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-    H5Dwrite(dataset, s1_tid, H5S_ALL, H5S_ALL, H5P_DEFAULT, s1);
+    //TEST
+    /*hid_t att_energy = H5Acreate2(file,"beam_energy",H5S_ALL,H5S_SCALAR,H5P_DEFAULT,H5P_DEFAULT);
+    hid_t att_height = H5Acreate2(file,"sensor_height",H5S_ALL,H5S_SCALAR,H5P_DEFAULT,H);
+    hid_t att_mat = H5Acreate2(file,"sensor_material",H5S_ALL,H5S_SCALAR,H5P_DEFAULT);
+    H5Awrite(att_energy,H5S_ALL,"200");
+    H5Awrite(att_height,H5S_ALL,"300000");
+    H5Awrite(att_mat,H5S_ALL,"G4_Si");*/
+
+    //create Datatype
+    for (G4int i = 0; i < event + 1; i++) {
+        //label conversion
+        std::stringstream out;
+        out << i;
+        G4String currentEvent = out.str();
+        G4String tableName = dataSetName + currentEvent;
+        //herr_t     status;
+        hsize_t    dim[] = { (long long unsigned int) sizes[i]};   /* Dataspace dimensions */
+        //dataSpace
+        space = H5Screate_simple(RANK, dim, NULL);
+
+        s1_tid = H5Tcreate(H5T_COMPOUND, sizeof(s1_t));
+        H5Tinsert(s1_tid, "Event", HOFFSET(s1_t, event), H5T_NATIVE_INT);
+        H5Tinsert(s1_tid, "Column", HOFFSET(s1_t, column), H5T_NATIVE_INT);
+        H5Tinsert(s1_tid, "Line", HOFFSET(s1_t, line), H5T_NATIVE_INT);
+        H5Tinsert(s1_tid, "X", HOFFSET(s1_t, x), H5T_NATIVE_DOUBLE);
+        H5Tinsert(s1_tid, "Y", HOFFSET(s1_t, y), H5T_NATIVE_DOUBLE);
+        H5Tinsert(s1_tid, "Z", HOFFSET(s1_t, z), H5T_NATIVE_DOUBLE);
+        H5Tinsert(s1_tid, "particle", HOFFSET(s1_t, particle), H5T_NATIVE_INT);
+        H5Tinsert(s1_tid, "tracklength", HOFFSET(s1_t, tracklength), H5T_NATIVE_DOUBLE);
+        H5Tinsert(s1_tid, "energy", HOFFSET(s1_t, energy), H5T_NATIVE_DOUBLE);
+
+        //throws error when dataset already exists! maybe errorhandling.
+        dataset = H5Dcreate(file, tableName, s1_tid, space, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+        H5Dwrite(dataset, s1_tid, H5S_ALL, H5S_ALL, H5P_DEFAULT, s1[i]);
+
+        H5Sclose(space);
+        H5Dclose(dataset);
+
+    }
 
     //close
     H5Tclose(s1_tid);
-    H5Sclose(space);
-    H5Dclose(dataset);
     H5Fclose(file);
 
     //empty list
     delete HitsCollectionCopy;
     HitsCollectionCopy 	= new DetectorHitsCollection();
 
-    delete[] s1;
+    free(s1);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

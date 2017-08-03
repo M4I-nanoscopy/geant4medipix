@@ -92,7 +92,7 @@ void ExportMgr::AddData(DetectorHitsCollection *HitsCollection, G4int event)
     lastEvent = event;
     nbEvents++;
     if (nbEvents == 1000) {
-      hdfExport->Write("Medipix", lastEvent);
+      hdfExport->Write("/trajectories/", lastEvent);
       nbEvents = 0;
     }
   }
@@ -103,7 +103,7 @@ void ExportMgr::AddData(DetectorHitsCollection *HitsCollection, G4int event)
 G4int ExportMgr::WriteData()
 {
     if (filename != "") {
-        hdfExport->Write("Medipix", lastEvent);
+        hdfExport->Write("/trajectories/", lastEvent);
         return lastEvent;
     }
 }
