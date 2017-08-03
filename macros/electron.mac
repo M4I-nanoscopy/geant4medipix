@@ -19,7 +19,7 @@
 
 /Sensor/phys/addPhysics emstandard_opt3
 
-/Detector/type Timepix3
+/Detector/type Timepix
 
 /Timepix/mode PC
 /Timepix/threshold 3 keV
@@ -43,7 +43,7 @@
 #
 /Sensor/material      G4_Si
 /Sensor/thickness     300 um
-/Sensor/pixels        11
+/Sensor/pixels        5
 /Sensor/pixelSize     55 um
 /Sensor/Update
 

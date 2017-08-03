@@ -231,6 +231,7 @@ void MpxDetector::WriteSparse()
         std::ofstream myFile(sfname, std::ios::out | std::ios::binary | std::ios::app);
         for (std::list<snglEvent>::const_iterator iterator = sparseList.begin(); iterator != sparseList.end(); ++iterator) {
             struct snglEvent newSnglEvent = *iterator;
+            //G4cout << newSnglEvent.col << "------" << sizeof(newSnglEvent) << G4endl;
             //G4cout << sizeof(newSnglEvent.event) << sizeof(newSnglEvent.col) << sizeof(newSnglEvent.line) << sizeof(newSnglEvent.energy) << sizeof(newSnglEvent) <<G4endl;
             myFile.write((char *)&newSnglEvent.event, 4);
             myFile.write((char *)&newSnglEvent.col, 4);

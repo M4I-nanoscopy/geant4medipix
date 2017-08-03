@@ -261,7 +261,6 @@ void DigitizerWeightField::Digitize()
     //add pixel events to digitizer hit collection
     detector->AddPixelEvents(digitCollection);
 
-
     //print the contents of the digitCollection to the console
     if (DEBUG == true) {
         G4int n = digitCollection->GetSize();

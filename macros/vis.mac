@@ -1,4 +1,4 @@
-# Macro file for the visualization setting for the initialization phase 
+# Macro file for the visualization setting for the initialization phase
 # of the B4 example when running in interactive mode
 #
 
@@ -31,7 +31,7 @@
 /vis/drawVolume
 #
 # Specify view angle:
-/vis/viewer/set/viewpointThetaPhi 90. 180.
+/vis/viewer/set/viewpointThetaPhi 270. 180.
 #
 # Specify zoom value:
 #/vis/viewer/zoom 2.
@@ -74,6 +74,8 @@
 # To superimpose all of the events from a given run:
 /vis/scene/endOfEventAction accumulate
 #
+/vis/viewer/set/upVector 0 0 1
+
 # Re-establish auto refreshing and verbosity:
 /vis/viewer/set/autoRefresh true
 /vis/verbose warnings

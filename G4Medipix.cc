@@ -116,13 +116,13 @@ int main(int argc, char **argv) {
 //     G4cout << "=========================================" << G4endl;
 //     CLHEP::HepRandom::setTheSeed(seed);
 
-    G4int seed = time(NULL);
+    /*G4int seed = time(NULL);
     //possibility to set an offset to random number via environment variable "JOB_ID"
     char *jobID = getenv("JOB_ID");
     if (jobID != nullptr)
         seed += atoi(jobID) * 4852234 * G4UniformRand();
     //G4cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << seed << G4endl;
-    G4Random::setTheSeed(seed);
+    G4Random::setTheSeed(seed);*/
 
     // Construct the default run manager
     //
