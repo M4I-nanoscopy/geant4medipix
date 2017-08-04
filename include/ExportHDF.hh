@@ -80,7 +80,7 @@ public:
      * \param dataSetName the name of the dataset in the HDF5 file
      * \param event the event ID
      */
-    void Write(G4String, G4int);
+    void Write(G4String, G4int, G4double);
     /**
      * TODO
      */ 

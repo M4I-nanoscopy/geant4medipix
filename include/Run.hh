@@ -52,7 +52,6 @@ public:
 
   void AddEdep(G4double e) {fEdeposit +=e; fEdeposit2 +=e*e;}
 
-
 private:
   G4int lastEvent;
   ExportMgr* mgr;

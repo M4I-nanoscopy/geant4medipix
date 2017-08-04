@@ -59,13 +59,13 @@ public:
     * \param HitsCollection* detector hits collection
     * \param event the eventID
     */
-    void AddData(DetectorHitsCollection *, G4int);
+    void AddData(DetectorHitsCollection *, G4int, G4double);
     /**
     * interaction data with sensor
     * \param HitsCollection* detector hits collection
     * \param event the eventID
     */
-    G4int WriteData();
+    G4int WriteData(G4double energy);
     /**
     * interaction data with sensor
     * \param 

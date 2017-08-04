@@ -50,6 +50,11 @@
 
 #include <typeinfo>
 #include <sstream>
+#include <G4GenericMessenger.hh>
+#include <G4GeneralParticleSourceData.hh>
+#include <G4GeneralParticleSourceMessenger.hh>
+#include <G4GeneralParticleSource.hh>
+#include <G4ParticleGun.hh>
 
 #include "H5Cpp.h"
 
@@ -144,7 +149,7 @@ void ExportHDF::AddEnergyPerPixel(DetectorHitsCollection *HitsCollection, G4int 
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void ExportHDF::Write(G4String dataSetName, G4int event)
+void ExportHDF::Write(G4String dataSetName, G4int event, G4double energy)
 {
     G4int LENGTH = HitsCollectionCopy->GetSize();
     G4int RANK = 1;
@@ -232,16 +237,28 @@ void ExportHDF::Write(G4String dataSetName, G4int event)
     }
 
     H5Gcreate1(file,"/trajectories",sizeof(file));
-    //StrType str_type(PredType::C_S1, H5T_VARIABLE);
-    //DataSpace dspace(H5S_SCALAR);
+    H5File file_( filename.c_str(), H5F_ACC_RDWR );
 
-    //TEST
-    /*hid_t att_energy = H5Acreate2(file,"beam_energy",H5S_ALL,H5S_SCALAR,H5P_DEFAULT,H5P_DEFAULT);
-    hid_t att_height = H5Acreate2(file,"sensor_height",H5S_ALL,H5S_SCALAR,H5P_DEFAULT,H);
-    hid_t att_mat = H5Acreate2(file,"sensor_material",H5S_ALL,H5S_SCALAR,H5P_DEFAULT);
-    H5Awrite(att_energy,H5S_ALL,"200");
-    H5Awrite(att_height,H5S_ALL,"300000");
-    H5Awrite(att_mat,H5S_ALL,"G4_Si");*/
+    StrType str_type(PredType::C_S1, H5T_VARIABLE);
+    DataSpace dspace(H5S_SCALAR);
+    DetectorConstructionBase* det = (DetectorConstructionBase*)
+            G4RunManager::GetRunManager()->GetUserDetectorConstruction();
+    if (!file_.attrExists("beam_energy") && energy != 0.0) {
+        Attribute att_energy = file_.createAttribute("beam_energy",PredType::NATIVE_DOUBLE,dspace);
+        G4double energy1 = energy*1000;
+        att_energy.write(PredType::NATIVE_DOUBLE,&energy1);
+    }
+    if (!file_.attrExists("sensor_height")) {
+        G4double height = det->GetSensorThickness()*1000000;
+        Attribute att_height = file_.createAttribute("sensor_height",PredType::NATIVE_DOUBLE,dspace);
+        att_height.write(PredType::NATIVE_DOUBLE,&height);
+    }
+    if (!file_.attrExists("sensor_material")) {
+        G4String mat = det->GetSensorMaterial()->GetName();
+        Attribute att_mat = file_.createAttribute("sensor_material",str_type,dspace);
+        att_mat.write(str_type,&mat);
+    }
+
 
     //create Datatype
     for (G4int i = 0; i < event + 1; i++) {
@@ -297,7 +314,7 @@ void ExportHDF::SetFilename(G4String name)
 
 void ExportHDF::WriteLast()
 {
-    Write(entryName, lastEvent);
+    Write(entryName, lastEvent, 0.0);
 }
 
 #endif

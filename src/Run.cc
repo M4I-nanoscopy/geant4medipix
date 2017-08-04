@@ -63,7 +63,7 @@ void Run::RecordEvent(const G4Event *event)
     lastEvent = event->GetEventID();
 
     if (HitsCollection->GetSize() != 0) {
-        mgr->AddData(HitsCollection, lastEvent);
+        mgr->AddData(HitsCollection, lastEvent, 0.0);
     }
 #endif
 }
