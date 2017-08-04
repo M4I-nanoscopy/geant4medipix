@@ -29,9 +29,9 @@
 #
 ## configure output
 #
-/Output/edep electron_20.h5
-/Output/config electron_20
-/Output/sparse electron_20
+/Output/edep electron.h5
+/Output/config electron
+/Output/sparse electron
 /Output/frames frames
 
 #
@@ -51,10 +51,10 @@
 #
 ## Configure histograms
 #
-#/analysis/setFileName electron
-#/analysis/h1/set 1 300  0.  100  um #edep profile
-#/analysis/h1/set 2 200  0. 200. keV #edep spectrum
-#/analysis/h1/set 3 200  0. 200. keV #secondary spectrum
+/analysis/setFileName electron
+/analysis/h1/set 1 300  0.  100  um #edep profile
+/analysis/h1/set 2 200  0. 200. keV #edep spectrum
+/analysis/h1/set 3 200  0. 200. keV #secondary spectrum
 
 /run/initialize
 
@@ -72,5 +72,5 @@
 /gps/pos/centre 0. 0. 5. cm
 /gps/direction  0 0 -1
 
-/run/beamOn 20
+/run/beamOn 3
 
