@@ -134,6 +134,23 @@ public:
         MpxThreshold4 = th;
     }
 
+/**
+ * struct definition of the xyc+ output format
+ * \param event
+ * \param col x-coordinate of pixel
+ * \param col y-coordinate of pixel
+ * \param energy energy depotion(geant4)
+ * \param tot time over threshold value after amplifier
+ * \param toa time of arrival value from amplifier
+ */
+struct snglEvent {
+    uint32_t event;
+    uint32_t col;
+    uint32_t line;
+    G4double energy;
+    G4double tot;
+    G4double toa;
+};
 private:
     static MpxDetector *instance;
 
@@ -167,24 +184,6 @@ private:
 
     G4int frameCounter;
 
-    /**
-     * struct definition of the xyc+ output format
-     * \param event
-     * \param col x-coordinate of pixel
-     * \param col y-coordinate of pixel
-     * \param energy energy depotion(geant4)
-     * \param tot time over threshold value after amplifier
-     * \param toa time of arrival value from amplifier
-     */
-    struct snglEvent {
-        uint32_t event;
-        uint32_t col;
-        uint32_t line;
-        G4double energy;
-        G4double tot;
-        G4double toa;
-    };
-    
     std::list<snglEvent> sparseList;
 
 };

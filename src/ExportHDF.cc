@@ -52,8 +52,6 @@ ExportHDF::ExportHDF()
 {
     HitsCollectionCopy = new DetectorHitsCollection();
     lastEvent	= 0;
-    //writeModulo = 1000;	//TODO now in Run.cc!!!
-//     filename 	= "Medipix.h5";
     filename    = "Medipix.h5";
     entryName   = "trajectories";
     counter 	= 1;
@@ -157,7 +155,9 @@ void ExportHDF::Write(G4String dataSetName, G4int event) {
     hid_t file, dataset, space;
 
     // Get file
-    file = H5Fcreate(filename.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+    // TODO: This should better interact with writing /pixels below
+    //file = H5Fcreate(filename.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+    file = H5Fopen(filename.c_str(), H5F_ACC_RDWR, H5P_DEFAULT);
 
     // Group trajectories
     H5Gcreate1(file, dataSetName.c_str(), sizeof(file));
@@ -253,6 +253,49 @@ void ExportHDF::Write(G4String dataSetName, G4int event) {
     HitsCollectionCopy = new DetectorHitsCollection();
 }
 
+void ExportHDF::WritePixels(std::list<MpxDetector::snglEvent> list) {
+    // TODO: Get pixel size from settings
+    G4double pixels[1000][2][11][11] = {{0}};
+
+    // Handles
+    hid_t file, dataset, space, prop;
+
+    // Dimensions
+    hsize_t dims[4]  = {1000, 2, 11, 11};
+    hsize_t maxdims[4] = {H5S_UNLIMITED, 2, 11, 11};
+
+    // Get file
+    // TODO: This should better interact with writing /trajectories above
+    file = H5Fcreate(filename.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+
+    // Create the data space with unlimited dimensions.
+    space = H5Screate_simple (4, dims, maxdims);
+
+    // Enable chunking
+    prop = H5Pcreate(H5P_DATASET_CREATE);
+    H5Pset_chunk(prop, 4, dims);
+
+    // Create a new dataset within the file using chunk creation properties.
+    dataset = H5Dcreate2(file, "/pixels", H5T_NATIVE_DOUBLE, space, H5P_DEFAULT, prop, H5P_DEFAULT);
+
+    for (std::list<MpxDetector::snglEvent>::const_iterator iterator = list.begin(); iterator != list.end(); ++iterator) {
+        struct MpxDetector::snglEvent e = *iterator;
+
+        pixels[e.event][0][e.col][e.line] = e.tot;
+        pixels[e.event][1][e.col][e.line] = e.toa;
+    }
+
+    // TODO: Write chunked pixels here on certain offset from start. Use hpyperslab for writing??
+    H5Dwrite (dataset, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, pixels);
+
+    // TODO: Handle case where we did not have 1000 pixels
+    // Use resize dataset. See https://support.hdfgroup.org/ftp/HDF5/current/src/unpacked/examples/h5_extend.c
+
+    H5Dclose (dataset);
+    H5Pclose (prop);
+    H5Fclose (file);
+
+}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 

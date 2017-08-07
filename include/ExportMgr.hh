@@ -30,6 +30,7 @@
 #ifndef ExportMgr_h
 #define ExportMgr_h 1
 
+#include <list>
 #include "ExportBase.hh"
 
 
@@ -39,6 +40,7 @@
 
 #include "G4Types.hh"
 #include "G4AutoLock.hh"
+#include "MpxDetector.hh"
 
 // class G4GenericMessenger;
 
@@ -65,13 +67,15 @@ public:
     * \param HitsCollection* detector hits collection
     * \param event the eventID
     */
-    G4int WriteData();
+    void WriteData();
     /**
     * interaction data with sensor
     * \param 
     * 
     */
     void SetHDFFilename(G4String);
+
+    void WritePixels(std::list<MpxDetector::snglEvent> list);
 
 private:
     static ExportMgr *instance;

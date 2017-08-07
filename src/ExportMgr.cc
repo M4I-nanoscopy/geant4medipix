@@ -100,11 +100,10 @@ void ExportMgr::AddData(DetectorHitsCollection *HitsCollection, G4int event)
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-G4int ExportMgr::WriteData()
+void ExportMgr::WriteData()
 {
     if (filename != "") {
         hdfExport->Write("/trajectories/", lastEvent);
-        return lastEvent;
     }
 }
 
@@ -133,4 +132,11 @@ void ExportMgr::SetFilenameHDFexport(G4String name)
 
   filename = name;
 }
+
+void ExportMgr::WritePixels(std::list<MpxDetector::snglEvent> list) {
+    G4cout << "Writing sparse pixels output per event to HDF5. Number of digits: " << list.size() << G4endl;
+
+    hdfExport->WritePixels(list);
+}
+
 #endif

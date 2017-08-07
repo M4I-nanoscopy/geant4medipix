@@ -68,11 +68,7 @@ public:
      * The ExportHDF destructor
      */
     virtual ~ExportHDF();
-    /**
-     * Export file function
-     */
-    void ExportToFile();
-    
+
     /**
      * Adds pixel energy to HitsCollection
      * \param *HitsCollection DetectorHitsCollection to write to
@@ -113,6 +109,7 @@ private:
     /** counter*/
     G4int       counter;
 
+    void WritePixels(std::list<MpxDetector::snglEvent> list);
 };
 
 #endif

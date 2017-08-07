@@ -32,6 +32,7 @@
 #define ExportBase_h 1
 
 #include "DetectorHit.hh"
+#include "MpxDetector.hh"
 
 
 // ExportBase class
@@ -64,7 +65,7 @@ public:
      */
     virtual void SetFilename(G4String) = 0;
 
-private:  
+    virtual void WritePixels(std::list<MpxDetector::snglEvent> list) = 0;
 
 };
 

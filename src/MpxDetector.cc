@@ -49,6 +49,7 @@
 
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/ini_parser.hpp>
+#include <ExportMgr.hh>
 
 // #include "../include/MpxDetector.hh"
 
@@ -240,9 +241,16 @@ void MpxDetector::WriteSparse()
             myFile.write((char *)&newSnglEvent.tot, 8);
             myFile.write((char *)&newSnglEvent.toa, 8);
         }
-        sparseList.clear();
+
         myFile.close();
     }
+
+#ifdef WITH_HDF5
+    ExportMgr *mgr = ExportMgr::GetInstance();
+    mgr->WritePixels(sparseList);
+
+#endif
+    sparseList.clear();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

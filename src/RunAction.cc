@@ -127,7 +127,7 @@ void RunAction::EndOfRunAction(const G4Run *aRun)
       detector = MpxDetector::GetInstance();
       detector->WriteSparse();
       detector->WriteFrame();
-      detector->WriteSimulationSettings();
+      // detector->WriteSimulationSettings();
 
 #ifdef WITH_HDF5
         //write Data to HDF5 file and delet Export Manager
