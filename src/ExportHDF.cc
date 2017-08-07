@@ -179,7 +179,7 @@ void ExportHDF::Write(G4String dataSetName, G4int event) {
         att_energy.write(PredType::NATIVE_DOUBLE, &energy);
     }
     if (!h5File.attrExists("sensor_height")) {
-        G4double height = det->GetSensorThickness() * 1000000;
+        G4double height = det->GetSensorThickness() / nm;
         Attribute att_height = h5File.createAttribute("sensor_height", PredType::NATIVE_DOUBLE, dspace);
         att_height.write(PredType::NATIVE_DOUBLE, &height);
     }
