@@ -544,8 +544,8 @@ void PreampMedipix::convolutionPreamp(map<pair<G4int, G4int>, G4double *> *induc
                         tempPreampReponse = tempPRItr->second;
 
                         //add to sum
-                        for(G4int i=0; i < nAmpResponseElements; i++){
-                            csmSumPreamp[i] += tempPreampReponse[i];
+                        for(G4int k=0; k < nAmpResponseElements; k++){
+                            csmSumPreamp[k] += tempPreampReponse[k];
                         }
                     }
                 }
