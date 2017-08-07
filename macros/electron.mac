@@ -19,9 +19,8 @@
 
 /Sensor/phys/addPhysics emstandard_opt3
 
-/Detector/type Timepix
-
-/Timepix/mode PC
+/Detector/type Timepix3
+/Timepix/mode ToT
 /Timepix/threshold 3 keV
 
 /Detector/digitizer WFDigitizer

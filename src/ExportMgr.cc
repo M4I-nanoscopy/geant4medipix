@@ -83,7 +83,7 @@ G4Mutex AddDataMutex = G4MUTEX_INITIALIZER;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void ExportMgr::AddData(DetectorHitsCollection *HitsCollection, G4int event, G4double energy)
+void ExportMgr::AddData(DetectorHitsCollection *HitsCollection, G4int event)
 {
   G4AutoLock l2(&AddDataMutex);
   // call export only when filename is set
@@ -92,7 +92,7 @@ void ExportMgr::AddData(DetectorHitsCollection *HitsCollection, G4int event, G4d
     lastEvent = event;
     nbEvents++;
     if (nbEvents == 1000) {
-      hdfExport->Write("/trajectories/", lastEvent, energy);
+        hdfExport->Write("/trajectories/", lastEvent);
       nbEvents = 0;
     }
   }
@@ -100,10 +100,10 @@ void ExportMgr::AddData(DetectorHitsCollection *HitsCollection, G4int event, G4d
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-G4int ExportMgr::WriteData(G4double energy)
+G4int ExportMgr::WriteData()
 {
     if (filename != "") {
-        hdfExport->Write("/trajectories/", lastEvent, energy);
+        hdfExport->Write("/trajectories/", lastEvent);
         return lastEvent;
     }
 }

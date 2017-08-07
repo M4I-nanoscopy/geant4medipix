@@ -62,7 +62,6 @@ RunAction::RunAction()
 #endif
     histoManager = new HistoManager();
     timer = new G4Timer();
-    energy = 0.0;
 
 }
 
@@ -133,7 +132,7 @@ void RunAction::EndOfRunAction(const G4Run *aRun)
 #ifdef WITH_HDF5
         //write Data to HDF5 file and delet Export Manager
         ExportMgr *mgr = ExportMgr::GetInstance();
-        mgr->WriteData(energy);
+      mgr->WriteData();
 #endif
     }
     // write histogram files
@@ -143,10 +142,6 @@ void RunAction::EndOfRunAction(const G4Run *aRun)
         analysisManager->Write();
         analysisManager->CloseFile();
     }
-}
-
-void RunAction::SetEnergy(G4double e) {
-    energy = e;
 }
 
 

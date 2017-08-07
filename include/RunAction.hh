@@ -55,14 +55,12 @@ public:
     virtual G4Run *GenerateRun();
     virtual void   BeginOfRunAction(const G4Run *);
     virtual void   EndOfRunAction(const G4Run *);
-    void SetEnergy(G4double e);
 
 private:
     G4Timer *timer;
     MpxDetector* detector;
     HistoManager* histoManager;
     G4GenericMessenger* fMessenger;
-    G4double energy;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

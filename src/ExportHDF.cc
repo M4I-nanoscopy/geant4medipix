@@ -35,18 +35,9 @@
 #include "RunAction.hh"
 #include "DetectorConstructionBase.hh"
 
-#include "G4Run.hh"
 #include "G4RunManager.hh"
 
 #include "G4SystemOfUnits.hh"
-
-#ifdef OLD_HEADER_FILENAME
-#include <iostream.h>
-#else
-#include <iostream>
-#endif
-#include <string>
-
 
 #include <typeinfo>
 #include <sstream>
@@ -54,13 +45,7 @@
 #include <G4GeneralParticleSourceData.hh>
 #include <G4GeneralParticleSourceMessenger.hh>
 #include <G4GeneralParticleSource.hh>
-#include <G4ParticleGun.hh>
-
-#include "H5Cpp.h"
-
-#ifndef H5_NO_NAMESPACE
-using namespace H5;
-#endif
+#include <PrimaryGeneratorAction.hh>
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 ExportHDF::ExportHDF()
@@ -149,11 +134,9 @@ void ExportHDF::AddEnergyPerPixel(DetectorHitsCollection *HitsCollection, G4int 
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void ExportHDF::Write(G4String dataSetName, G4int event, G4double energy) {
-    G4int LENGTH = HitsCollectionCopy->GetSize();
+void ExportHDF::Write(G4String dataSetName, G4int event) {
+    size_t LENGTH = HitsCollectionCopy->GetSize();
     G4int RANK = 1;
-
-    Exception::dontPrint();
 
     // structure  and dataset
     struct s1_t {
@@ -168,54 +151,50 @@ void ExportHDF::Write(G4String dataSetName, G4int event, G4double energy) {
         G4double energy;        //energy
     };
 
-    //typedef struct s1_t  s1_t;
+    // File datatype identifier
+    hid_t s1_tid;
+    // Handles
+    hid_t file, dataset, space;
 
-    hid_t s1_tid;     // File datatype identifier
+    // Get file
+    file = H5Fcreate(filename.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
 
-    hid_t file, dataset, space, faplist_id; /* Handles */
-
-    //get file
-    try {
-        faplist_id = H5Pcreate(H5P_FILE_ACCESS);
-        H5Pset_fapl_stdio(faplist_id);
-        file = H5Fopen(filename.c_str(), H5F_ACC_RDWR, faplist_id);
-    } catch (FileIException error) {
-    }
-    if (file < 0) {
-        file = H5Fcreate(filename.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
-    }
-
-    //Group trajectories
+    // Group trajectories
     H5Gcreate1(file, "/trajectories", sizeof(file));
 
     //Attributes
-    H5File file_(filename.c_str(), H5F_ACC_RDWR);
+    H5File h5File(filename.c_str(), H5F_ACC_RDWR);
     StrType str_type(PredType::C_S1, H5T_VARIABLE);
     DataSpace dspace(H5S_SCALAR);
+
     DetectorConstructionBase *det = (DetectorConstructionBase *)
             G4RunManager::GetRunManager()->GetUserDetectorConstruction();
-    if (!file_.attrExists("beam_energy") && energy != 0.0) {
-        Attribute att_energy = file_.createAttribute("beam_energy", PredType::NATIVE_DOUBLE, dspace);
-        G4double energy1 = energy * 1000;
-        att_energy.write(PredType::NATIVE_DOUBLE, &energy1);
+
+    PrimaryGeneratorAction *pga = (PrimaryGeneratorAction * )
+            G4RunManager::GetRunManager()->GetUserPrimaryGeneratorAction();
+
+    if (!h5File.attrExists("beam_energy")) {
+        Attribute att_energy = h5File.createAttribute("beam_energy", PredType::NATIVE_DOUBLE, dspace);
+        G4double energy =  pga->GetParticleGun()->GetParticleEnergy() / keV;
+        att_energy.write(PredType::NATIVE_DOUBLE, &energy);
     }
-    if (!file_.attrExists("sensor_height")) {
+    if (!h5File.attrExists("sensor_height")) {
         G4double height = det->GetSensorThickness() * 1000000;
-        Attribute att_height = file_.createAttribute("sensor_height", PredType::NATIVE_DOUBLE, dspace);
+        Attribute att_height = h5File.createAttribute("sensor_height", PredType::NATIVE_DOUBLE, dspace);
         att_height.write(PredType::NATIVE_DOUBLE, &height);
     }
-    if (!file_.attrExists("sensor_material")) {
+    if (!h5File.attrExists("sensor_material")) {
         G4String mat = det->GetSensorMaterial()->GetName();
-        Attribute att_mat = file_.createAttribute("sensor_material", str_type, dspace);
+        Attribute att_mat = h5File.createAttribute("sensor_material", str_type, dspace);
         att_mat.write(str_type, &mat);
     }
 
-    s1_t s1[LENGTH];
+    s1_t *s1 = new s1_t[LENGTH];
 
     G4int ev = 0;
     G4int temp = 0;
 
-    for (G4int i = 0; i < LENGTH; i++) {
+    for (size_t i = 0; i < LENGTH; i++) {
 
         DetectorHit *sensorHit = (*HitsCollectionCopy)[i];
 
@@ -286,7 +265,7 @@ void ExportHDF::SetFilename(G4String name)
 
 void ExportHDF::WriteLast()
 {
-    Write(entryName, lastEvent, 0.0);
+    Write(entryName, lastEvent);
 }
 
 #endif

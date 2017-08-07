@@ -58,8 +58,6 @@ EventAction::EventAction() : G4UserEventAction(),
     fEnergyPerEvent(0)
 {
 
-    count = 0;
-
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -109,12 +107,6 @@ void EventAction::BeginOfEventAction(const G4Event *event)
     }
     // reset energy per event
     fEnergyPerEvent = 0.;
-    if (count < 1) {
-        count++;
-        G4double energy = event->GetPrimaryVertex()->GetPrimary()->GetKineticEnergy();
-        RunAction* run = (RunAction*) G4RunManager::GetRunManager()->GetUserRunAction();
-        run->SetEnergy(energy);
-    }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

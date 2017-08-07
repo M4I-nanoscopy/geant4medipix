@@ -48,11 +48,7 @@ endif()
 # include boost
 find_package(Boost COMPONENTS system filesystem REQUIRED)
 
-# CADMesh
-# find_package(cadmesh)
-
 # Include the HDF5 library
-
 find_package(HDF5 COMPONENTS CXX)
 if(HDF5_FOUND)
   option(WITH_HDF5 "HDF5 output enabled" ${HDF5_FOUND})
@@ -62,10 +58,6 @@ if(HDF5_FOUND)
   set(hdf5_libs hdf5_serial hdf5_cpp hdf5_hl_cpp)
 #  set(LIBS ${LIBS} ${HDF5_hdf5_cpp_LIBRARY})
 endif()
-
-#find_package(HDF5 COMPONENTS CXX)
-#include_directories(${HDF5_CXX_INCLUDE_DIR})
-
 
 
 #----------------------------------------------------------------------------

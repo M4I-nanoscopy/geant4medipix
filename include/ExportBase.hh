@@ -52,7 +52,7 @@ public:
      * 
      * 
      */
-    virtual void Write(G4String, G4int, G4double) = 0;
+    virtual void Write(G4String, G4int) = 0;
     /**
      * 
      * 

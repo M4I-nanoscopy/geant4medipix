@@ -33,9 +33,19 @@
 #ifdef WITH_HDF5
 #include "DetectorHit.hh"
 #include "ExportBase.hh"
+
 #include "H5Cpp.h"
 
+#ifdef OLD_HEADER_FILENAME
+#include <iostream.h>
+#else
+#include <iostream>
+#endif
+
+#include <string>
+
 #ifndef H5_NO_NAMESPACE
+using namespace H5;
 #endif
 
 /** ExportHDF class
@@ -80,7 +90,7 @@ public:
      * \param dataSetName the name of the dataset in the HDF5 file
      * \param event the event ID
      */
-    void Write(G4String, G4int, G4double);
+    void Write(G4String, G4int);
     /**
      * TODO
      */ 
