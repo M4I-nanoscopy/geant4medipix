@@ -160,7 +160,7 @@ void ExportHDF::Write(G4String dataSetName, G4int event) {
     file = H5Fcreate(filename.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
 
     // Group trajectories
-    H5Gcreate1(file, "/trajectories", sizeof(file));
+    H5Gcreate1(file, dataSetName.c_str(), sizeof(file));
 
     //Attributes
     H5File h5File(filename.c_str(), H5F_ACC_RDWR);
