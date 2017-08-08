@@ -55,6 +55,7 @@ ExportHDF::ExportHDF()
     filename    = "Medipix.h5";
     entryName   = "trajectories";
     counter 	= 1;
+    offset = 0;
     
 //     DefineCommands();
 }
@@ -67,10 +68,13 @@ ExportHDF::ExportHDF(G4String name)
     
     entryName   = "trajectories";
     counter     = 1;
+    offset = 0;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-ExportHDF::~ExportHDF() {}
+ExportHDF::~ExportHDF() {
+    H5Fclose(file_);
+}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 void ExportHDF::AddSingleEvents(DetectorHitsCollection *HitsCollection, G4int event)
@@ -157,7 +161,8 @@ void ExportHDF::Write(G4String dataSetName, G4int event) {
     // Get file
     // TODO: This should better interact with writing /pixels below
     //file = H5Fcreate(filename.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
-    file = H5Fopen(filename.c_str(), H5F_ACC_RDWR, H5P_DEFAULT);
+    //file = H5Fopen(filename.c_str(), H5F_ACC_RDWR, H5P_DEFAULT);
+    file = GetOutputfile(filename);
 
     // Group trajectories
     H5Gcreate1(file, dataSetName.c_str(), sizeof(file));
@@ -248,7 +253,8 @@ void ExportHDF::Write(G4String dataSetName, G4int event) {
             temp++;
         }
     }
-    H5Fclose(file);
+
+    //H5Fclose(file);
 
     delete HitsCollectionCopy;
     HitsCollectionCopy = new DetectorHitsCollection();
@@ -272,8 +278,8 @@ void ExportHDF::WritePixels(std::list<MpxDetector::snglEvent> list) {
 
     // Get file
     // TODO: This should better interact with writing /trajectories above
-    file = H5Fcreate(filename.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
-
+    //file = H5Fcreate(filename.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+    file = GetOutputfile(filename);
     // Create the data space with unlimited dimensions.
     space = H5Screate_simple (4, dims, maxdims);
 
@@ -283,23 +289,37 @@ void ExportHDF::WritePixels(std::list<MpxDetector::snglEvent> list) {
 
     // Create a new dataset within the file using chunk creation properties.
     dataset = H5Dcreate2(file, "/pixels", H5T_NATIVE_DOUBLE, space, H5P_DEFAULT, prop, H5P_DEFAULT);
-
+    G4int evv = 0;
     for (std::list<MpxDetector::snglEvent>::const_iterator iterator = list.begin(); iterator != list.end(); ++iterator) {
         struct MpxDetector::snglEvent e = *iterator;
 
         pixels[e.event][0][e.col][e.line] = e.tot;
         pixels[e.event][1][e.col][e.line] = e.toa;
+
+        if ((G4int) e.event != evv) {
+            offset += 1;
+            evv = e.event;
+        }
     }
 
-    // TODO: Write chunked pixels here on certain offset from start. Use hpyperslab for writing??
+    /*hsize_t offset_[4];
+    offset_[0] = offset;
+    offset_[1] = dims[1];
+    offset_[2] = dims[2];
+    offset_[3] = dims[3];
+    herr_t status = H5Dset_extent (dataset, size);*/
+    // TODO: Write chunked pixels here on certain offset from start. Use hyperslab for writing??
     H5Dwrite (dataset, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, pixels);
 
     // TODO: Handle case where we did not have 1000 pixels
-    // Use resize dataset. See https://support.hdfgroup.org/ftp/HDF5/current/src/unpacked/examples/h5_extend.c
+    if (offset%1000 != 0) {
+        // Use resize dataset. See https://support.hdfgroup.org/ftp/HDF5/current/src/unpacked/examples/h5_extend.c
+    }
+
 
     H5Dclose (dataset);
     H5Pclose (prop);
-    H5Fclose (file);
+    //H5Fclose (file);
 
 }
 
@@ -315,6 +335,13 @@ void ExportHDF::SetFilename(G4String name)
 void ExportHDF::WriteLast()
 {
     Write(entryName, lastEvent);
+}
+
+hid_t ExportHDF::GetOutputfile(G4String fname) {
+    if (file_ == 0) {
+        file_ = H5Fcreate(fname.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+    }
+    return file_;
 }
 
 #endif

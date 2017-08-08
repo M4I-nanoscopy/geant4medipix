@@ -97,6 +97,8 @@ public:
      */
     void SetFilename(G4String);
 
+    hid_t GetOutputfile(G4String);
+
 private:
 //     void DefineCommands();
     /** The hits collection copy from SD */
@@ -108,6 +110,10 @@ private:
     G4int       writeModulo;
     /** counter*/
     G4int       counter;
+
+    G4int offset;
+
+    hid_t file_ = 0;
 
     void WritePixels(std::list<MpxDetector::snglEvent> list);
 };
