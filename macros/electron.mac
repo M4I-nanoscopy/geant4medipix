@@ -32,6 +32,7 @@
 /Output/config electron
 /Output/sparse electron
 /Output/frames frames
+/Output/store true
 
 #
 ## Set cuts

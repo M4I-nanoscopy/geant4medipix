@@ -151,6 +151,9 @@ public:
     inline void SetSparseOutputFilename(G4String fname) {
         sparseOptFname = fname;
     }
+    inline void SetStoreTraj(G4bool store){
+        storeTraj = store;
+    }
 
     //
     virtual G4VPhysicalVolume* DefineVolumes() = 0;
@@ -256,6 +259,9 @@ public:
     G4String GetConfigFilename() {
         return configFilename;
     }
+    G4String GetStoreTraj() {
+        return storeTraj;
+    }
 
 
     static G4ThreadLocal G4GenericMessenger *fMessenger;  // messenger
@@ -263,6 +269,7 @@ public:
     G4double    sensorSizeXY;
     G4bool      fCheckOverlaps; // option to activate checking of volumes overlaps
     G4Material *sensorMaterial;
+    G4bool storeTraj;
 
     G4RotationMatrix fRotation;
     G4double    sensorThickness;

@@ -189,64 +189,65 @@ void ExportHDF::Write(G4String dataSetName, G4int event) {
         att_mat.write(str_type, &mat);
     }
 
-    s1_t *s1 = new s1_t[LENGTH];
+    if (det->storeTraj) {
+        s1_t *s1 = new s1_t[LENGTH];
 
-    G4int ev = 0;
-    G4int temp = 0;
+        G4int ev = 0;
+        G4int temp = 0;
 
-    for (size_t i = 0; i < LENGTH; i++) {
+        for (size_t i = 0; i < LENGTH; i++) {
 
-        DetectorHit *sensorHit = (*HitsCollectionCopy)[i];
+            DetectorHit *sensorHit = (*HitsCollectionCopy)[i];
 
-        if (sensorHit->GetEvent() != ev || i == LENGTH - 1) {
-            if (i == LENGTH - 1) {
-                s1[temp].event = sensorHit->GetEvent();
-                s1[temp].column = sensorHit->GetColumn();
-                s1[temp].line = sensorHit->GetLine();
-                s1[temp].x = sensorHit->GetPosition().x();
-                s1[temp].y = sensorHit->GetPosition().y();
-                s1[temp].z = sensorHit->GetPosition().z();
-                s1[temp].particle = sensorHit->GetParticleID();
-                s1[temp].tracklength = sensorHit->GetTrackLength();
-                s1[temp].energy = sensorHit->GetEdep() / keV;
-                temp++;
+            if (sensorHit->GetEvent() != ev || i == LENGTH - 1) {
+                if (i == LENGTH - 1) {
+                    s1[temp].event = sensorHit->GetEvent();
+                    s1[temp].column = sensorHit->GetColumn();
+                    s1[temp].line = sensorHit->GetLine();
+                    s1[temp].x = sensorHit->GetPosition().x();
+                    s1[temp].y = sensorHit->GetPosition().y();
+                    s1[temp].z = sensorHit->GetPosition().z();
+                    s1[temp].particle = sensorHit->GetParticleID();
+                    s1[temp].tracklength = sensorHit->GetTrackLength();
+                    s1[temp].energy = sensorHit->GetEdep() / keV;
+                    temp++;
+                }
+                s1_tid = H5Tcreate(H5T_COMPOUND, sizeof(s1_t));
+                H5Tinsert(s1_tid, "Event", HOFFSET(s1_t, event), H5T_NATIVE_INT);
+                H5Tinsert(s1_tid, "Column", HOFFSET(s1_t, column), H5T_NATIVE_INT);
+                H5Tinsert(s1_tid, "Line", HOFFSET(s1_t, line), H5T_NATIVE_INT);
+                H5Tinsert(s1_tid, "X", HOFFSET(s1_t, x), H5T_NATIVE_DOUBLE);
+                H5Tinsert(s1_tid, "Y", HOFFSET(s1_t, y), H5T_NATIVE_DOUBLE);
+                H5Tinsert(s1_tid, "Z", HOFFSET(s1_t, z), H5T_NATIVE_DOUBLE);
+                H5Tinsert(s1_tid, "particle", HOFFSET(s1_t, particle), H5T_NATIVE_INT);
+                H5Tinsert(s1_tid, "tracklength", HOFFSET(s1_t, tracklength), H5T_NATIVE_DOUBLE);
+                H5Tinsert(s1_tid, "energy", HOFFSET(s1_t, energy), H5T_NATIVE_DOUBLE);
+                G4String st = std::to_string(ev);
+                G4String tableName = dataSetName + st;
+                hsize_t dim[] = {(long long unsigned int) temp};
+                space = H5Screate_simple(RANK, dim, NULL);
+                dataset = H5Dcreate(file, tableName, s1_tid, space, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                H5Dwrite(dataset, s1_tid, H5S_ALL, H5S_ALL, H5P_DEFAULT, s1);
+                H5Dclose(dataset);
+                H5Sclose(space);
+                H5Tclose(s1_tid);
+
+                ev++;
+                temp = 0;
             }
-            s1_tid = H5Tcreate(H5T_COMPOUND, sizeof(s1_t));
-            H5Tinsert(s1_tid, "Event", HOFFSET(s1_t, event), H5T_NATIVE_INT);
-            H5Tinsert(s1_tid, "Column", HOFFSET(s1_t, column), H5T_NATIVE_INT);
-            H5Tinsert(s1_tid, "Line", HOFFSET(s1_t, line), H5T_NATIVE_INT);
-            H5Tinsert(s1_tid, "X", HOFFSET(s1_t, x), H5T_NATIVE_DOUBLE);
-            H5Tinsert(s1_tid, "Y", HOFFSET(s1_t, y), H5T_NATIVE_DOUBLE);
-            H5Tinsert(s1_tid, "Z", HOFFSET(s1_t, z), H5T_NATIVE_DOUBLE);
-            H5Tinsert(s1_tid, "particle", HOFFSET(s1_t, particle), H5T_NATIVE_INT);
-            H5Tinsert(s1_tid, "tracklength", HOFFSET(s1_t, tracklength), H5T_NATIVE_DOUBLE);
-            H5Tinsert(s1_tid, "energy", HOFFSET(s1_t, energy), H5T_NATIVE_DOUBLE);
-            G4String st = std::to_string(ev);
-            G4String tableName = dataSetName + st;
-            hsize_t dim[] = {(long long unsigned int) temp};
-            space = H5Screate_simple(RANK, dim, NULL);
-            dataset = H5Dcreate(file, tableName, s1_tid, space, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-            H5Dwrite(dataset, s1_tid, H5S_ALL, H5S_ALL, H5P_DEFAULT, s1);
-            H5Dclose(dataset);
-            H5Sclose(space);
-            H5Tclose(s1_tid);
 
-            ev++;
-            temp = 0;
+            s1[temp].event = sensorHit->GetEvent();
+            s1[temp].column = sensorHit->GetColumn();
+            s1[temp].line = sensorHit->GetLine();
+            s1[temp].x = sensorHit->GetPosition().x();
+            s1[temp].y = sensorHit->GetPosition().y();
+            s1[temp].z = sensorHit->GetPosition().z();
+            s1[temp].particle = sensorHit->GetParticleID();
+            s1[temp].tracklength = sensorHit->GetTrackLength();
+            s1[temp].energy = sensorHit->GetEdep() / keV;
+            temp++;
         }
-
-        s1[temp].event = sensorHit->GetEvent();
-        s1[temp].column = sensorHit->GetColumn();
-        s1[temp].line = sensorHit->GetLine();
-        s1[temp].x = sensorHit->GetPosition().x();
-        s1[temp].y = sensorHit->GetPosition().y();
-        s1[temp].z = sensorHit->GetPosition().z();
-        s1[temp].particle = sensorHit->GetParticleID();
-        s1[temp].tracklength = sensorHit->GetTrackLength();
-        s1[temp].energy = sensorHit->GetEdep() / keV;
-        temp++;
     }
-
     H5Fclose(file);
 
     delete HitsCollectionCopy;
@@ -254,15 +255,20 @@ void ExportHDF::Write(G4String dataSetName, G4int event) {
 }
 
 void ExportHDF::WritePixels(std::list<MpxDetector::snglEvent> list) {
+    DetectorConstructionBase *det = (DetectorConstructionBase *)
+            G4RunManager::GetRunManager()->GetUserDetectorConstruction();
+
+    G4int nb = det->GetNbPixels();
+
     // TODO: Get pixel size from settings
-    G4double pixels[1000][2][11][11] = {{0}};
+    G4double pixels[1000][2][nb][nb] = {{0}};
 
     // Handles
     hid_t file, dataset, space, prop;
 
     // Dimensions
-    hsize_t dims[4]  = {1000, 2, 11, 11};
-    hsize_t maxdims[4] = {H5S_UNLIMITED, 2, 11, 11};
+    hsize_t dims[4]  = {1000, 2, (hsize_t) nb, (hsize_t) nb};
+    hsize_t maxdims[4] = {H5S_UNLIMITED, 2, (hsize_t) nb, (hsize_t) nb};
 
     // Get file
     // TODO: This should better interact with writing /trajectories above

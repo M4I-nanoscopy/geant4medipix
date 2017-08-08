@@ -327,6 +327,9 @@ DetectorMessenger::DetectorMessenger(DetectorConstructionBase *Det)
 
     pSetConfigFilenameCmd = new G4UIcmdWithAString("/Output/config", this);
     pSetConfigFilenameCmd->AvailableForStates(G4State_PreInit, G4State_Idle);
+
+    pSetStoreTrajCmd = new G4UIcmdWithABool("/Output/store", this);
+    pSetStoreTrajCmd->AvailableForStates(G4State_PreInit, G4State_Idle);
 }
 
 DetectorMessenger::~DetectorMessenger()
@@ -389,6 +392,7 @@ DetectorMessenger::~DetectorMessenger()
     delete pSetSparseOutputFilenameCmd;
     delete pSetOutputDirectoryCmd;
     delete pSetConfigFilenameCmd;
+    delete pSetStoreTrajCmd;
 }
 
 void DetectorMessenger::SetNewValue(G4UIcommand *cmd, G4String newValue)
@@ -558,5 +562,8 @@ void DetectorMessenger::SetNewValue(G4UIcommand *cmd, G4String newValue)
     }
     if (cmd == pSetConfigFilenameCmd) {
         Detector->SetConfigFilename(newValue);
+    }
+    if (cmd == pSetStoreTrajCmd) {
+        Detector->SetStoreTraj(pSetStoreTrajCmd->GetNewBoolValue(newValue));
     }
 }
