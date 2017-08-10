@@ -73,8 +73,7 @@ ExportHDF::ExportHDF(G4String name)
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 ExportHDF::~ExportHDF() {
-    //H5Fclose(file_);
-    //H5Dclose(data);
+    H5Fclose(file_);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -139,19 +138,13 @@ void ExportHDF::AddEnergyPerPixel(DetectorHitsCollection *HitsCollection, G4int 
 
 void ExportHDF::Write(G4String dataSetName, G4int event) {
     size_t LENGTH = HitsCollectionCopy->GetSize();
-    G4int RANK = 1;
 
     // structure  and dataset
     struct s1_t {
-        G4int event;        //Event-Number
-        G4int column;        //pixel
-        G4int line;
-        G4double x;        //position
+        G4double x;
         G4double y;
         G4double z;
-        G4int particle;    //particle
-        G4double tracklength;    //tracklength
-        G4double energy;        //energy
+        G4double energy;
     };
 
     // File datatype identifier
@@ -160,101 +153,54 @@ void ExportHDF::Write(G4String dataSetName, G4int event) {
     hid_t file, dataset, space;
 
     // Get file
-    // TODO: This should better interact with writing /pixels below
-    //file = H5Fcreate(filename.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
-    //file = H5Fopen(filename.c_str(), H5F_ACC_RDWR, H5P_DEFAULT);
     file = GetOutputfile(filename);
 
     // Group trajectories
-    if (offset < 1001) {
-        H5Gcreate1(file, dataSetName.c_str(), sizeof(file));
-    }
-    //Attributes
-    H5File h5File(filename.c_str(), H5F_ACC_RDWR);
-    StrType str_type(PredType::C_S1, H5T_VARIABLE);
-    DataSpace dspace(H5S_SCALAR);
+    H5Gcreate1(file, dataSetName.c_str(), sizeof(file));
 
     DetectorConstructionBase *det = (DetectorConstructionBase *)
             G4RunManager::GetRunManager()->GetUserDetectorConstruction();
 
-    PrimaryGeneratorAction *pga = (PrimaryGeneratorAction * )
-            G4RunManager::GetRunManager()->GetUserPrimaryGeneratorAction();
-
-    if (!h5File.attrExists("beam_energy")) {
-        Attribute att_energy = h5File.createAttribute("beam_energy", PredType::NATIVE_DOUBLE, dspace);
-        G4double energy =  pga->GetParticleGun()->GetParticleEnergy() / keV;
-        att_energy.write(PredType::NATIVE_DOUBLE, &energy);
-    }
-    if (!h5File.attrExists("sensor_height")) {
-        G4double height = det->GetSensorThickness() / nm;
-        Attribute att_height = h5File.createAttribute("sensor_height", PredType::NATIVE_DOUBLE, dspace);
-        att_height.write(PredType::NATIVE_DOUBLE, &height);
-    }
-    if (!h5File.attrExists("sensor_material")) {
-        G4String mat = det->GetSensorMaterial()->GetName();
-        Attribute att_mat = h5File.createAttribute("sensor_material", str_type, dspace);
-        att_mat.write(str_type, &mat);
+    if (! det->storeTraj) {
+        return;
     }
 
-    if (det->storeTraj) {
-        s1_t *s1 = new s1_t[LENGTH];
+    s1_t *s1 = new s1_t[LENGTH];
 
-        G4int ev = ((offset-1)/1000)*1000;
-        G4int temp = 0;
+    G4int ev = 0;
+    G4int temp = 0;
 
-        for (size_t i = 0; i < LENGTH; i++) {
+    for (size_t i = 0; i < LENGTH; i++) {
 
-            DetectorHit *sensorHit = (*HitsCollectionCopy)[i];
+        DetectorHit *sensorHit = (*HitsCollectionCopy)[i];
 
-            if (sensorHit->GetEvent() != ev || i == LENGTH - 1) {
-                if (i == LENGTH - 1) {
-                    s1[temp].event = sensorHit->GetEvent();
-                    s1[temp].column = sensorHit->GetColumn();
-                    s1[temp].line = sensorHit->GetLine();
-                    s1[temp].x = sensorHit->GetPosition().x();
-                    s1[temp].y = sensorHit->GetPosition().y();
-                    s1[temp].z = sensorHit->GetPosition().z();
-                    s1[temp].particle = sensorHit->GetParticleID();
-                    s1[temp].tracklength = sensorHit->GetTrackLength();
-                    s1[temp].energy = sensorHit->GetEdep() / keV;
-                    temp++;
-                }
-                s1_tid = H5Tcreate(H5T_COMPOUND, sizeof(s1_t));
-                H5Tinsert(s1_tid, "Event", HOFFSET(s1_t, event), H5T_NATIVE_INT);
-                H5Tinsert(s1_tid, "Column", HOFFSET(s1_t, column), H5T_NATIVE_INT);
-                H5Tinsert(s1_tid, "Line", HOFFSET(s1_t, line), H5T_NATIVE_INT);
-                H5Tinsert(s1_tid, "X", HOFFSET(s1_t, x), H5T_NATIVE_DOUBLE);
-                H5Tinsert(s1_tid, "Y", HOFFSET(s1_t, y), H5T_NATIVE_DOUBLE);
-                H5Tinsert(s1_tid, "Z", HOFFSET(s1_t, z), H5T_NATIVE_DOUBLE);
-                H5Tinsert(s1_tid, "particle", HOFFSET(s1_t, particle), H5T_NATIVE_INT);
-                H5Tinsert(s1_tid, "tracklength", HOFFSET(s1_t, tracklength), H5T_NATIVE_DOUBLE);
-                H5Tinsert(s1_tid, "energy", HOFFSET(s1_t, energy), H5T_NATIVE_DOUBLE);
-                G4String st = std::to_string(ev);
-                G4String tableName = dataSetName + st;
-                hsize_t dim[] = {(long long unsigned int) temp};
-                space = H5Screate_simple(RANK, dim, NULL);
-                dataset = H5Dcreate(file, tableName, s1_tid, space, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-                H5Dwrite(dataset, s1_tid, H5S_ALL, H5S_ALL, H5P_DEFAULT, s1);
-                H5Dclose(dataset);
-                H5Sclose(space);
-                H5Tclose(s1_tid);
-
-                ev++;
-                temp = 0;
+        if (sensorHit->GetEvent() != ev || i == LENGTH - 1) {
+            if (i == LENGTH - 1) {
+                s1[temp].x = sensorHit->GetPosition().x();
+                s1[temp].y = sensorHit->GetPosition().y();
+                s1[temp].z = sensorHit->GetPosition().z();
+                s1[temp].energy = sensorHit->GetEdep() / keV;
+                temp++;
             }
+            G4String tableName = dataSetName + std::to_string(ev);
+            hsize_t dim[] = {(long long unsigned int) temp, 4};
+            space = H5Screate_simple(2, dim, NULL);
+            dataset = H5Dcreate(file, tableName, H5T_IEEE_F64LE, space, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+            H5Dwrite(dataset, H5T_IEEE_F64LE , H5S_ALL, H5S_ALL, H5P_DEFAULT, s1);
+            H5Dclose(dataset);
+            H5Sclose(space);
 
-            s1[temp].event = sensorHit->GetEvent();
-            s1[temp].column = sensorHit->GetColumn();
-            s1[temp].line = sensorHit->GetLine();
-            s1[temp].x = sensorHit->GetPosition().x();
-            s1[temp].y = sensorHit->GetPosition().y();
-            s1[temp].z = sensorHit->GetPosition().z();
-            s1[temp].particle = sensorHit->GetParticleID();
-            s1[temp].tracklength = sensorHit->GetTrackLength();
-            s1[temp].energy = sensorHit->GetEdep() / keV;
-            temp++;
+            ev++;
+            temp = 0;
         }
+
+        s1[temp].x = sensorHit->GetPosition().x();
+        s1[temp].y = sensorHit->GetPosition().y();
+        s1[temp].z = sensorHit->GetPosition().z();
+        s1[temp].energy = sensorHit->GetEdep() / keV;
+        temp++;
     }
+
 
     //H5Fclose(file);
 
@@ -345,9 +291,39 @@ void ExportHDF::WriteLast()
 }
 
 hid_t ExportHDF::GetOutputfile(G4String fname) {
-    if (file_ == 0) {
-        file_ = H5Fcreate(fname.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+    if (file_ != 0) {
+        return file_;
     }
+
+    file_ = H5Fcreate(fname.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+
+    // Attributes
+    H5File h5File(filename.c_str(), H5F_ACC_RDWR);
+    StrType str_type(PredType::C_S1, H5T_VARIABLE);
+    DataSpace dspace(H5S_SCALAR);
+
+    DetectorConstructionBase *det = (DetectorConstructionBase *)
+            G4RunManager::GetRunManager()->GetUserDetectorConstruction();
+
+    PrimaryGeneratorAction *pga = (PrimaryGeneratorAction * )
+            G4RunManager::GetRunManager()->GetUserPrimaryGeneratorAction();
+
+    if (!h5File.attrExists("beam_energy")) {
+        Attribute att_energy = h5File.createAttribute("beam_energy", PredType::NATIVE_DOUBLE, dspace);
+        G4double energy =  pga->GetParticleGun()->GetParticleEnergy() / keV;
+        att_energy.write(PredType::NATIVE_DOUBLE, &energy);
+    }
+    if (!h5File.attrExists("sensor_height")) {
+        G4double height = det->GetSensorThickness() / nm;
+        Attribute att_height = h5File.createAttribute("sensor_height", PredType::NATIVE_DOUBLE, dspace);
+        att_height.write(PredType::NATIVE_DOUBLE, &height);
+    }
+    if (!h5File.attrExists("sensor_material")) {
+        G4String mat = det->GetSensorMaterial()->GetName();
+        Attribute att_mat = h5File.createAttribute("sensor_material", str_type, dspace);
+        att_mat.write(str_type, &mat);
+    }
+
     return file_;
 }
 
