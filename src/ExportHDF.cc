@@ -201,8 +201,8 @@ void ExportHDF::Write(G4String dataSetName, G4int event) {
         temp++;
     }
 
-
-    //H5Fclose(file);
+    delete[] s1;
+    H5Fclose(file);
 
     delete HitsCollectionCopy;
     HitsCollectionCopy = new DetectorHitsCollection();
@@ -210,22 +210,19 @@ void ExportHDF::Write(G4String dataSetName, G4int event) {
 
 void ExportHDF::WritePixels(std::list<MpxDetector::snglEvent> list) {
     G4int number_events = G4RunManager::GetRunManager()->GetNumberOfEventsToBeProcessed();
-    if (number_events%SIZE == 0 && offset == number_events) return;
-    
+    if (number_events%PIXELS_CHUNK_SIZE == 0 && offset == number_events) return;
+
     DetectorConstructionBase *det = (DetectorConstructionBase *)
             G4RunManager::GetRunManager()->GetUserDetectorConstruction();
     G4int nb = det->GetNbPixels();
 
     // TODO: Get pixel size from settings
-    G4double *pixels = (G4double*) calloc(SIZE * 2 * nb * nb, sizeof(G4double));
+    G4double *pixels = (G4double*) calloc(PIXELS_CHUNK_SIZE * 2 * nb * nb, sizeof(G4double));
 
     // Handles
     if (offset == 0) {
         data = PixelsDataset(number_events);
     }
-
-    // Get file
-    // TODO: This should better interact with writing /trajectories above
 
     G4int evv = offset;
     for (std::list<MpxDetector::snglEvent>::const_iterator iterator = list.begin(); iterator != list.end(); ++iterator) {
@@ -237,42 +234,31 @@ void ExportHDF::WritePixels(std::list<MpxDetector::snglEvent> list) {
     }
     offset = evv + 1;
 
-    if (offset < SIZE + 1) {
-        H5Dwrite (data, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, pixels);
-    }
-    else {
-        hsize_t offset_[4];
-        offset_[0] = ((offset-1)/SIZE)*SIZE;
-        offset_[1] = 0;
-        offset_[2] = 0;
-        offset_[3] = 0;
-        hsize_t size[4];
-        size[0] = offset;
-        size[1] = 2;
-        size[2] = nb;
-        size[3] = nb;
-        H5Dset_extent(data,size);
-        hid_t filespace = H5Dget_space (data);
-        hsize_t dimsext[4];
-        dimsext[0] = offset - ((offset-1)/SIZE)*SIZE;
-        dimsext[1] = 2;
-        dimsext[2] = nb;
-        dimsext[3] = nb;
-        H5Sselect_hyperslab (filespace, H5S_SELECT_SET, offset_, NULL,
-                             dimsext, NULL);
-        hid_t memspace = H5Screate_simple (4, dimsext, NULL);
-        H5Dwrite (data, H5T_NATIVE_DOUBLE, memspace, filespace,
-                  H5P_DEFAULT, pixels);
-        // TODO: Write chunked pixels here on certain offset from start. Use hyperslab for writing??
-    }
-    // TODO: Handle case where we did not have 1000 pixels
-    //if (offset%1000 != 0) {
-        // Use resize dataset. See https://support.hdfgroup.org/ftp/HDF5/current/src/unpacked/examples/h5_extend.c
-    //}
+    hsize_t offset_[4];
+    offset_[0] = ((offset-1)/PIXELS_CHUNK_SIZE)*PIXELS_CHUNK_SIZE;
+    offset_[1] = 0;
+    offset_[2] = 0;
+    offset_[3] = 0;
+    hsize_t size[4];
+    size[0] = offset;
+    size[1] = 2;
+    size[2] = nb;
+    size[3] = nb;
+    H5Dset_extent(data,size);
+    hid_t filespace = H5Dget_space (data);
+    hsize_t dimsext[4];
+    dimsext[0] = offset - ((offset-1)/PIXELS_CHUNK_SIZE)*PIXELS_CHUNK_SIZE;
+    dimsext[1] = 2;
+    dimsext[2] = nb;
+    dimsext[3] = nb;
+    H5Sselect_hyperslab (filespace, H5S_SELECT_SET, offset_, NULL,
+                         dimsext, NULL);
+    hid_t memspace = H5Screate_simple (4, dimsext, NULL);
+    H5Dwrite (data, H5T_NATIVE_DOUBLE, memspace, filespace,
+              H5P_DEFAULT, pixels);
 
-
+    free(pixels);
     //H5Dclose (dataset);
-    //H5Pclose (prop);
     //H5Fclose (file);
 }
 
@@ -333,7 +319,7 @@ hid_t ExportHDF::PixelsDataset(G4int nevents) {
             G4RunManager::GetRunManager()->GetUserDetectorConstruction();
     G4int nb = det->GetNbPixels();
     G4int firstSize;
-    if (nevents >= SIZE) firstSize = SIZE;
+    if (nevents >= PIXELS_CHUNK_SIZE) firstSize = PIXELS_CHUNK_SIZE;
     else firstSize = nevents;
     hsize_t dims[4] = {(hsize_t) firstSize, 2, (hsize_t) nb, (hsize_t) nb};
     hsize_t maxdims[4] = {H5S_UNLIMITED, 2, (hsize_t) nb, (hsize_t) nb};
@@ -342,7 +328,8 @@ hid_t ExportHDF::PixelsDataset(G4int nevents) {
     prop = H5Pcreate(H5P_DATASET_CREATE);
     H5Pset_chunk(prop, 4, dims);
     dataset = H5Dcreate2(file, "/pixels", H5T_NATIVE_DOUBLE, space, H5P_DEFAULT, prop, H5P_DEFAULT);
-    //H5Pclose(prop);
+    H5Pclose(prop);
+    H5Sclose(space);
     return dataset;
 }
 

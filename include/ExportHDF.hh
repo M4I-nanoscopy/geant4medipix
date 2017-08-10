@@ -48,7 +48,7 @@
 using namespace H5;
 #endif
 
-const int SIZE = 10;
+const int PIXELS_CHUNK_SIZE = 10;
 
 
 /** ExportHDF class

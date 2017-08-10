@@ -206,7 +206,7 @@ void MpxDetector::AddPixelEvents(MpxDigitCollection *collection)
         } // end Dosepix
     }
     writeCounter++;
-    if (writeCounter == SIZE) {
+    if (writeCounter == PIXELS_CHUNK_SIZE) {
         WriteSparse();
         writeCounter = 0;
     }
