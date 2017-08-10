@@ -209,16 +209,19 @@ void ExportHDF::Write(G4String dataSetName, G4int event) {
 }
 
 void ExportHDF::WritePixels(std::list<MpxDetector::snglEvent> list) {
+    G4int number_events = G4RunManager::GetRunManager()->GetNumberOfEventsToBeProcessed();
+    if (number_events%SIZE == 0 && offset == number_events) return;
+    
     DetectorConstructionBase *det = (DetectorConstructionBase *)
             G4RunManager::GetRunManager()->GetUserDetectorConstruction();
     G4int nb = det->GetNbPixels();
 
     // TODO: Get pixel size from settings
-    G4double pixels[1000][2][nb][nb] = {{0}};
+    G4double *pixels = (G4double*) calloc(SIZE * 2 * nb * nb, sizeof(G4double));
 
     // Handles
     if (offset == 0) {
-        data = PixelsDataset(G4RunManager::GetRunManager()->GetNumberOfEventsToBeProcessed());
+        data = PixelsDataset(number_events);
     }
 
     // Get file
@@ -227,22 +230,19 @@ void ExportHDF::WritePixels(std::list<MpxDetector::snglEvent> list) {
     G4int evv = offset;
     for (std::list<MpxDetector::snglEvent>::const_iterator iterator = list.begin(); iterator != list.end(); ++iterator) {
         struct MpxDetector::snglEvent e = *iterator;
-        pixels[e.event - (e.event/1000)*1000][0][e.col][e.line] = e.tot;
-        pixels[e.event - (e.event/1000)*1000][1][e.col][e.line] = e.toa;
+        pixels[(e.event - offset)*2*nb*nb + e.col*nb + e.line] = e.tot;
+        pixels[(e.event - offset)*2*nb*nb + nb*nb + e.col*nb + e.line] = e.toa;
 
-        if ((G4int) e.event != evv) {
-            offset += 1;
-            evv = e.event;
-        }
+        evv = e.event;
     }
-    offset+=1;
+    offset = evv + 1;
 
-    if (offset < 1001) {
+    if (offset < SIZE + 1) {
         H5Dwrite (data, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, pixels);
     }
     else {
         hsize_t offset_[4];
-        offset_[0] = ((offset-1)/1000)*1000;
+        offset_[0] = ((offset-1)/SIZE)*SIZE;
         offset_[1] = 0;
         offset_[2] = 0;
         offset_[3] = 0;
@@ -254,7 +254,7 @@ void ExportHDF::WritePixels(std::list<MpxDetector::snglEvent> list) {
         H5Dset_extent(data,size);
         hid_t filespace = H5Dget_space (data);
         hsize_t dimsext[4];
-        dimsext[0] = offset - ((offset-1)/1000)*1000;
+        dimsext[0] = offset - ((offset-1)/SIZE)*SIZE;
         dimsext[1] = 2;
         dimsext[2] = nb;
         dimsext[3] = nb;
@@ -333,7 +333,7 @@ hid_t ExportHDF::PixelsDataset(G4int nevents) {
             G4RunManager::GetRunManager()->GetUserDetectorConstruction();
     G4int nb = det->GetNbPixels();
     G4int firstSize;
-    if (nevents >= 1000) firstSize = 1000;
+    if (nevents >= SIZE) firstSize = SIZE;
     else firstSize = nevents;
     hsize_t dims[4] = {(hsize_t) firstSize, 2, (hsize_t) nb, (hsize_t) nb};
     hsize_t maxdims[4] = {H5S_UNLIMITED, 2, (hsize_t) nb, (hsize_t) nb};
