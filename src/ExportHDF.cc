@@ -176,9 +176,9 @@ void ExportHDF::Write(G4String dataSetName, G4int event) {
 
         if (sensorHit->GetEvent() != ev || i == LENGTH - 1) {
             if (i == LENGTH - 1) {
-                s1[temp].x = sensorHit->GetPosition().x();
-                s1[temp].y = sensorHit->GetPosition().y();
-                s1[temp].z = sensorHit->GetPosition().z();
+                s1[temp].x = sensorHit->GetPosition().x() / nm;
+                s1[temp].y = sensorHit->GetPosition().y() / nm;
+                s1[temp].z = sensorHit->GetPosition().z() / nm;
                 s1[temp].energy = sensorHit->GetEdep() / keV;
                 temp++;
             }
@@ -194,9 +194,9 @@ void ExportHDF::Write(G4String dataSetName, G4int event) {
             temp = 0;
         }
 
-        s1[temp].x = sensorHit->GetPosition().x();
-        s1[temp].y = sensorHit->GetPosition().y();
-        s1[temp].z = sensorHit->GetPosition().z();
+        s1[temp].x = sensorHit->GetPosition().x() / nm;
+        s1[temp].y = sensorHit->GetPosition().y() / nm;
+        s1[temp].z = sensorHit->GetPosition().z() / nm;
         s1[temp].energy = sensorHit->GetEdep() / keV;
         temp++;
     }
