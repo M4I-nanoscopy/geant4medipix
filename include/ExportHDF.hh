@@ -48,6 +48,9 @@
 using namespace H5;
 #endif
 
+const int SIZE = 10;
+
+
 /** ExportHDF class
 * 
 * this class is used to export HitsCollections to HDF5 files
@@ -99,6 +102,8 @@ public:
 
     hid_t GetOutputfile(G4String);
 
+    hid_t PixelsDataset(G4int);
+
 private:
 //     void DefineCommands();
     /** The hits collection copy from SD */
@@ -114,6 +119,8 @@ private:
     G4int offset;
 
     hid_t file_ = 0;
+
+    hid_t data = 0;
 
     void WritePixels(std::list<MpxDetector::snglEvent> list);
 };
