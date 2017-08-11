@@ -75,6 +75,8 @@ public:
     */
     void SetHDFFilename(G4String);
 
+    void CloseDataFile();
+
     void WritePixels(std::list<MpxDetector::snglEvent> list);
 
 private:

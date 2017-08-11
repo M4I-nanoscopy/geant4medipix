@@ -48,7 +48,7 @@
 using namespace H5;
 #endif
 
-const int PIXELS_CHUNK_SIZE = 10;
+const int PIXELS_CHUNK_SIZE = 2;
 
 
 /** ExportHDF class
@@ -103,6 +103,8 @@ public:
     hid_t GetOutputfile(G4String);
 
     hid_t PixelsDataset(G4int);
+
+    void Close();
 
 private:
 //     void DefineCommands();

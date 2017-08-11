@@ -73,7 +73,6 @@ ExportHDF::ExportHDF(G4String name)
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 ExportHDF::~ExportHDF() {
-    H5Fclose(file_);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -202,7 +201,6 @@ void ExportHDF::Write(G4String dataSetName, G4int event) {
     }
 
     delete[] s1;
-    H5Fclose(file);
 
     delete HitsCollectionCopy;
     HitsCollectionCopy = new DetectorHitsCollection();
@@ -331,6 +329,11 @@ hid_t ExportHDF::PixelsDataset(G4int nevents) {
     H5Pclose(prop);
     H5Sclose(space);
     return dataset;
+}
+
+void ExportHDF::Close() {
+    H5Dclose(data);
+    H5Fclose(file_);
 }
 
 #endif

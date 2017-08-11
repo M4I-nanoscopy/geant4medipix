@@ -133,6 +133,7 @@ void RunAction::EndOfRunAction(const G4Run *aRun)
         //write Data to HDF5 file and delet Export Manager
         ExportMgr *mgr = ExportMgr::GetInstance();
       mgr->WriteData();
+      mgr->CloseDataFile();
 #endif
     }
     // write histogram files

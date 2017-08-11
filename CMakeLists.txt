@@ -42,8 +42,6 @@ if(WITH_GEANT4_UIVIS)
 else()
   find_package(Geant4 REQUIRED)
 endif()
-
-
        
 # include boost
 find_package(Boost COMPONENTS system filesystem REQUIRED)

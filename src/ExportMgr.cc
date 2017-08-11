@@ -107,6 +107,10 @@ void ExportMgr::WriteData()
     }
 }
 
+void ExportMgr::CloseDataFile() {
+    hdfExport->Close();
+}
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void ExportMgr::SetHDFFilename(G4String name)

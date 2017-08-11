@@ -67,6 +67,8 @@ public:
 
     virtual void WritePixels(std::list<MpxDetector::snglEvent> list) = 0;
 
+    virtual void Close() = 0;
+
 };
 
 #endif
