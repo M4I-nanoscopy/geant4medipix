@@ -113,8 +113,10 @@ void RunAction::BeginOfRunAction(const G4Run *)
 
 #ifdef WITH_HDF5
     // Create HDF5 file
-    ExportMgr *mgr = ExportMgr::GetInstance();
-    mgr->CreateDataFile();
+    if ( fRM->GetRunManagerType() ==  G4RunManager::masterRM ) {
+        ExportMgr *mgr = ExportMgr::GetInstance();
+        mgr->CreateDataFile();
+    }
 #endif
 }
 

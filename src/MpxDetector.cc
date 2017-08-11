@@ -222,6 +222,8 @@ void MpxDetector::WriteSparse()
 {
     G4AutoLock l3(&WriteMutex);
 
+    G4cout << "Writing sparse pixels output per event. Number of digits: " << sparseList.size() << G4endl;
+
     //Acces to detector parameters
     G4RunManager *fRM = G4RunManager::GetRunManager();
     DetectorConstructionBase *myDet = (DetectorConstructionBase *)(fRM->GetUserDetectorConstruction());
@@ -247,7 +249,7 @@ void MpxDetector::WriteSparse()
 
 #ifdef WITH_HDF5
     ExportMgr *mgr = ExportMgr::GetInstance();
-    mgr->WritePixels(sparseList);
+    //mgr->WritePixels(sparseList);
 
 #endif
     sparseList.clear();

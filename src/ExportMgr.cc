@@ -130,14 +130,20 @@ G4Mutex SetFilenameMutex = G4MUTEX_INITIALIZER;
 
 void ExportMgr::SetFilenameHDFexport(G4String name)
 {
-  G4AutoLock l2(&AddDataMutex);
+  G4AutoLock l2(&SetFilenameMutex);
   hdfExport->SetFilename(name);
   G4cout << "DEBUG: SetFilenameHDFexport: " << name << G4endl;
 
   filename = name;
 }
 
+namespace
+{
+    G4Mutex WritePixelsMutex = G4MUTEX_INITIALIZER;
+}
 void ExportMgr::WritePixels(std::list<MpxDetector::snglEvent> list) {
+    G4AutoLock l2(&WritePixelsMutex);
+
     G4cout << "Writing sparse pixels output per event to HDF5. Number of digits: " << list.size() << G4endl;
 
     hdfExport->WritePixels(list);

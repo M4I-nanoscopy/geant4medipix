@@ -134,6 +134,8 @@ void ExportHDF::AddEnergyPerPixel(DetectorHitsCollection *HitsCollection, G4int 
 void ExportHDF::Write(G4String dataSetName, G4int event) {
     size_t LENGTH = HitsCollectionCopy->GetSize();
 
+    G4cout << "Writing trajectories output per event to HDF5. Number of hits: " << LENGTH << G4endl;
+
     // structure  and dataset
     struct s1_t {
         G4double x;
@@ -250,6 +252,9 @@ void ExportHDF::WritePixels(std::list<MpxDetector::snglEvent> list) {
 
     // Clean up
     free(pixels);
+
+    H5Sclose(filespace);
+    H5Sclose(memspace);
     H5Dclose (data);
     CloseOutputFile(file);
 }
@@ -268,6 +273,7 @@ void ExportHDF::CreateOutputFile() {
     hid_t file = H5Fcreate(filename.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
 
     // Attributes
+    /*
     DetectorConstructionBase *det = (DetectorConstructionBase *)
             G4RunManager::GetRunManager()->GetUserDetectorConstruction();
 
@@ -295,6 +301,7 @@ void ExportHDF::CreateOutputFile() {
     H5Aclose(att_energy);
     H5Aclose(att_height);
     H5Aclose(att_mat);
+     */
 
     H5Fclose(file);
 }
