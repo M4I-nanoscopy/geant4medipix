@@ -142,8 +142,6 @@ void ExportHDF::Write(G4String dataSetName, G4int event) {
         G4double energy;
     };
 
-    // File datatype identifier
-    hid_t s1_tid;
     // Handles
     hid_t file, dataset, space;
 
@@ -295,6 +293,9 @@ void ExportHDF::CreateOutputFile() {
         Attribute att_mat = h5File.createAttribute("sensor_material", str_type, dspace);
         att_mat.write(str_type, &mat);
     }
+
+    h5File.close();
+    H5Fclose(file);
 }
 
 hid_t ExportHDF::GetOutputFile() {
