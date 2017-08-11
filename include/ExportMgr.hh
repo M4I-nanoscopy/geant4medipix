@@ -75,7 +75,7 @@ public:
     */
     void SetHDFFilename(G4String);
 
-    void CloseDataFile();
+    void CreateDataFile();
 
     void WritePixels(std::list<MpxDetector::snglEvent> list);
 
@@ -99,7 +99,6 @@ private:
 
 //     G4GenericMessenger *fMessenger;/**< the messenger instance */
     G4String filename; /**< the HDF5 filename*/
-
 };
 
 

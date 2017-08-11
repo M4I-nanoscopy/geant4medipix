@@ -28,7 +28,7 @@
 #
 ## configure output
 #
-/Output/edep electron.h5
+/Output/edep g4medipix-300si-200kev.h5
 /Output/config electron
 /Output/sparse electron
 /Output/frames frames

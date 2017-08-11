@@ -72,10 +72,6 @@ ExportHDF::ExportHDF(G4String name)
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-ExportHDF::~ExportHDF() {
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 void ExportHDF::AddSingleEvents(DetectorHitsCollection *HitsCollection, G4int event)
 {
     for (G4int i = 0; i < (G4int) HitsCollection->GetSize(); i++) {
@@ -152,7 +148,7 @@ void ExportHDF::Write(G4String dataSetName, G4int event) {
     hid_t file, dataset, space;
 
     // Get file
-    file = GetOutputfile(filename);
+    file = GetOutputFile();
 
     // Group trajectories
     H5Gcreate1(file, dataSetName.c_str(), sizeof(file));
@@ -201,8 +197,8 @@ void ExportHDF::Write(G4String dataSetName, G4int event) {
     }
 
     delete[] s1;
-
     delete HitsCollectionCopy;
+    CloseOutputFile(file);
     HitsCollectionCopy = new DetectorHitsCollection();
 }
 
@@ -218,9 +214,8 @@ void ExportHDF::WritePixels(std::list<MpxDetector::snglEvent> list) {
     G4double *pixels = (G4double*) calloc(PIXELS_CHUNK_SIZE * 2 * nb * nb, sizeof(G4double));
 
     // Handles
-    if (offset == 0) {
-        data = PixelsDataset(number_events);
-    }
+    hid_t file = GetOutputFile();
+    hid_t data = PixelsDataset(file, number_events);
 
     G4int evv = offset;
     for (std::list<MpxDetector::snglEvent>::const_iterator iterator = list.begin(); iterator != list.end(); ++iterator) {
@@ -255,9 +250,10 @@ void ExportHDF::WritePixels(std::list<MpxDetector::snglEvent> list) {
     H5Dwrite (data, H5T_NATIVE_DOUBLE, memspace, filespace,
               H5P_DEFAULT, pixels);
 
+    // Clean up
     free(pixels);
-    //H5Dclose (dataset);
-    //H5Fclose (file);
+    H5Dclose (data);
+    CloseOutputFile(file);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -269,17 +265,9 @@ void ExportHDF::SetFilename(G4String name)
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void ExportHDF::WriteLast()
-{
-    Write(entryName, lastEvent);
-}
+void ExportHDF::CreateOutputFile() {
 
-hid_t ExportHDF::GetOutputfile(G4String fname) {
-    if (file_ != 0) {
-        return file_;
-    }
-
-    file_ = H5Fcreate(fname.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+    hid_t file = H5Fcreate(filename.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
 
     // Attributes
     H5File h5File(filename.c_str(), H5F_ACC_RDWR);
@@ -307,33 +295,42 @@ hid_t ExportHDF::GetOutputfile(G4String fname) {
         Attribute att_mat = h5File.createAttribute("sensor_material", str_type, dspace);
         att_mat.write(str_type, &mat);
     }
-
-    return file_;
 }
 
-hid_t ExportHDF::PixelsDataset(G4int nevents) {
-    hid_t space, prop, file, dataset;
+hid_t ExportHDF::GetOutputFile() {
+    hid_t file;
+    file = H5Fopen(filename.c_str(), H5F_ACC_RDWR, H5P_DEFAULT);
+
+    return file;
+}
+
+void ExportHDF::CloseOutputFile(hid_t file) {
+    H5Fclose(file);
+}
+
+hid_t ExportHDF::PixelsDataset(hid_t file, G4int nevents) {
+    hid_t space, prop, dataset;
     DetectorConstructionBase *det = (DetectorConstructionBase *)
             G4RunManager::GetRunManager()->GetUserDetectorConstruction();
     G4int nb = det->GetNbPixels();
     G4int firstSize;
-    if (nevents >= PIXELS_CHUNK_SIZE) firstSize = PIXELS_CHUNK_SIZE;
-    else firstSize = nevents;
-    hsize_t dims[4] = {(hsize_t) firstSize, 2, (hsize_t) nb, (hsize_t) nb};
-    hsize_t maxdims[4] = {H5S_UNLIMITED, 2, (hsize_t) nb, (hsize_t) nb};
-    file = GetOutputfile(filename);
-    space = H5Screate_simple (4, dims, maxdims);
+
+    /*if (nevents >= PIXELS_CHUNK_SIZE) {
+        firstSize = PIXELS_CHUNK_SIZE;
+    } else {
+        firstSize = nevents;
+    }*/
+
+    hsize_t dims[4] = {(hsize_t) PIXELS_CHUNK_SIZE, 2, (hsize_t) nb, (hsize_t) nb};
+    hsize_t maxDims[4] = {H5S_UNLIMITED, 2, (hsize_t) nb, (hsize_t) nb};
+
+    space = H5Screate_simple (4, dims, maxDims);
     prop = H5Pcreate(H5P_DATASET_CREATE);
     H5Pset_chunk(prop, 4, dims);
     dataset = H5Dcreate2(file, "/pixels", H5T_NATIVE_DOUBLE, space, H5P_DEFAULT, prop, H5P_DEFAULT);
     H5Pclose(prop);
     H5Sclose(space);
     return dataset;
-}
-
-void ExportHDF::Close() {
-    H5Dclose(data);
-    H5Fclose(file_);
 }
 
 #endif

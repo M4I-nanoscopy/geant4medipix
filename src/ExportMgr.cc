@@ -107,8 +107,8 @@ void ExportMgr::WriteData()
     }
 }
 
-void ExportMgr::CloseDataFile() {
-    hdfExport->Close();
+void ExportMgr::CreateDataFile() {
+    hdfExport->CreateOutputFile();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

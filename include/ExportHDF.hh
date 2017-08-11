@@ -68,11 +68,6 @@ public:
     ExportHDF(G4String);
 
     /**
-     * The ExportHDF destructor
-     */
-    virtual ~ExportHDF();
-
-    /**
      * Adds pixel energy to HitsCollection
      * \param *HitsCollection DetectorHitsCollection to write to
      * \param event the eventID
@@ -91,20 +86,12 @@ public:
      */
     void Write(G4String, G4int);
     /**
-     * TODO
-     */ 
-    void WriteLast();
-    /**
      *  Set hdf5 file name
      * \param name sets the name
      */
     void SetFilename(G4String);
 
-    hid_t GetOutputfile(G4String);
-
-    hid_t PixelsDataset(G4int);
-
-    void Close();
+    void CreateOutputFile();
 
 private:
 //     void DefineCommands();
@@ -120,11 +107,13 @@ private:
 
     G4int offset;
 
-    hid_t file_ = 0;
-
-    hid_t data = 0;
-
     void WritePixels(std::list<MpxDetector::snglEvent> list);
+
+    void CloseOutputFile(hid_t file);
+
+    hid_t GetOutputFile();
+
+    hid_t PixelsDataset(hid_t file, G4int events);
 };
 
 #endif

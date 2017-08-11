@@ -58,16 +58,11 @@ public:
      * 
      * 
      */
-    virtual void WriteLast() = 0;
-    /**
-     * 
-     * 
-     */
     virtual void SetFilename(G4String) = 0;
 
     virtual void WritePixels(std::list<MpxDetector::snglEvent> list) = 0;
 
-    virtual void Close() = 0;
+    virtual void CreateOutputFile() = 0;
 
 };
 

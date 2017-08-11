@@ -110,6 +110,12 @@ void RunAction::BeginOfRunAction(const G4Run *)
     if (analysisManager->IsActive()) {
         analysisManager->OpenFile();
     }
+
+#ifdef WITH_HDF5
+    // Create HDF5 file
+    ExportMgr *mgr = ExportMgr::GetInstance();
+    mgr->CreateDataFile();
+#endif
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -130,11 +136,11 @@ void RunAction::EndOfRunAction(const G4Run *aRun)
       // detector->WriteSimulationSettings();
 
 #ifdef WITH_HDF5
-        //write Data to HDF5 file and delet Export Manager
-        ExportMgr *mgr = ExportMgr::GetInstance();
+      // Write trajectory data to HDF5 file
+      ExportMgr *mgr = ExportMgr::GetInstance();
       mgr->WriteData();
-      mgr->CloseDataFile();
 #endif
+
     }
     // write histogram files
     // Analysis manager takes care of threads and joins files!
