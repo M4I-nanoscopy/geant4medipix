@@ -284,8 +284,8 @@ void ExportHDF::CreateOutputFile() {
     H5Awrite(att_energy,H5T_NATIVE_DOUBLE,&energy);
     hid_t att_height = H5Acreate2 (file, "sensor_height", H5T_NATIVE_DOUBLE, dataspace_id,
                                    H5P_DEFAULT, H5P_DEFAULT);
-    /*H5Awrite(att_height,H5T_NATIVE_DOUBLE,&height);
-    hid_t aid = H5Screate(H5S_SCALAR);
+    H5Awrite(att_height,H5T_NATIVE_DOUBLE,&height);
+    /*hid_t aid = H5Screate(H5S_SCALAR);
     hid_t atype = H5Tcopy (H5T_C_S1);
     H5Tset_size (atype, 20);
     hid_t att_mat = H5Acreate (file, "sensor_material", atype, aid, H5P_DEFAULT, H5P_DEFAULT);
