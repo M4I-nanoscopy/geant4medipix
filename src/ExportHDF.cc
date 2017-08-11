@@ -268,33 +268,34 @@ void ExportHDF::CreateOutputFile() {
     hid_t file = H5Fcreate(filename.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
 
     // Attributes
-    H5File h5File(filename.c_str(), H5F_ACC_RDWR);
-    StrType str_type(PredType::C_S1, H5T_VARIABLE);
-    DataSpace dspace(H5S_SCALAR);
-
     DetectorConstructionBase *det = (DetectorConstructionBase *)
             G4RunManager::GetRunManager()->GetUserDetectorConstruction();
 
     PrimaryGeneratorAction *pga = (PrimaryGeneratorAction * )
             G4RunManager::GetRunManager()->GetUserPrimaryGeneratorAction();
 
-    if (!h5File.attrExists("beam_energy")) {
-        Attribute att_energy = h5File.createAttribute("beam_energy", PredType::NATIVE_DOUBLE, dspace);
-        G4double energy =  pga->GetParticleGun()->GetParticleEnergy() / keV;
-        att_energy.write(PredType::NATIVE_DOUBLE, &energy);
-    }
-    if (!h5File.attrExists("sensor_height")) {
-        G4double height = det->GetSensorThickness() / nm;
-        Attribute att_height = h5File.createAttribute("sensor_height", PredType::NATIVE_DOUBLE, dspace);
-        att_height.write(PredType::NATIVE_DOUBLE, &height);
-    }
-    if (!h5File.attrExists("sensor_material")) {
-        G4String mat = det->GetSensorMaterial()->GetName();
-        Attribute att_mat = h5File.createAttribute("sensor_material", str_type, dspace);
-        att_mat.write(str_type, &mat);
-    }
+    G4double energy =  pga->GetParticleGun()->GetParticleEnergy() / keV;
+    G4double height = det->GetSensorThickness() / nm;
+    G4String mat = det->GetSensorMaterial()->GetName();
+    hsize_t  dim = 1;
+    hid_t dataspace_id = H5Screate_simple(1, &dim, NULL);
+    hid_t att_energy = H5Acreate2 (file, "beam_energy", H5T_NATIVE_DOUBLE, dataspace_id,
+                               H5P_DEFAULT, H5P_DEFAULT);
+    H5Awrite(att_energy,H5T_NATIVE_DOUBLE,&energy);
+    hid_t att_height = H5Acreate2 (file, "sensor_height", H5T_NATIVE_DOUBLE, dataspace_id,
+                                   H5P_DEFAULT, H5P_DEFAULT);
+    /*H5Awrite(att_height,H5T_NATIVE_DOUBLE,&height);
+    hid_t aid = H5Screate(H5S_SCALAR);
+    hid_t atype = H5Tcopy (H5T_C_S1);
+    H5Tset_size (atype, 20);
+    hid_t att_mat = H5Acreate (file, "sensor_material", atype, aid, H5P_DEFAULT, H5P_DEFAULT);
+    H5Awrite (att_mat, atype, &mat);*/
 
-    h5File.close();
+
+    H5Sclose(dataspace_id);
+    H5Aclose(att_energy);
+    H5Aclose(att_height);
+
     H5Fclose(file);
 }
 

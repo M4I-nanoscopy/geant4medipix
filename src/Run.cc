@@ -61,6 +61,14 @@ void Run::RecordEvent(const G4Event *event)
     HitsCollection = static_cast<DetectorHitsCollection *>(event->GetHCofThisEvent()->GetHC(0));
 
     lastEvent = event->GetEventID();
+    /*for (G4int i = 1; i < HitsCollection->GetSize(); i++) {
+        if ((*HitsCollection)[i]->GetTime() < (*HitsCollection)[i-1]->GetTime()) {
+            std::cout << (*HitsCollection)[i-1]->GetTime() << "-----"
+                      << (*HitsCollection)[i]->GetTime() << std::endl;
+        }
+    }
+    std::cout << "Size : " << HitsCollection->GetSize() << std::endl;*/
+
 
     if (HitsCollection->GetSize() != 0) {
         mgr->AddData(HitsCollection, lastEvent);
