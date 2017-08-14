@@ -48,31 +48,32 @@
 using namespace H5;
 #endif
 
-const int PIXELS_CHUNK_SIZE = 100;
+const int PIXELS_CHUNK_SIZE = 10;
 
 
 /** ExportHDF class
 * 
 * this class is used to export HitsCollections to HDF5 files
 */
-
+struct snglEvent {
+    uint32_t event;
+    uint32_t col;
+    uint32_t line;
+    G4double energy;
+    G4double tot;
+    G4double toa;
+};
 class ExportHDF : public ExportBase
 {
-G4String filename;
-
 public:
+    G4String filename;
     /**
      * The ExportHDF constructor
      */
     ExportHDF();
-    ExportHDF(G4String);
 
-    /**
-     * Adds pixel energy to HitsCollection
-     * \param *HitsCollection DetectorHitsCollection to write to
-     * \param event the eventID
-     */
-    void AddSingleEvents(DetectorHitsCollection *, G4int);
+    void AddSingleEvents(DetectorHitsCollection *);
+    void AddSingleDigits(MpxDigitCollection *DigitCollection);
     /**
      *  Adds energy of single pixel to dataset
      * \param *HitsCollection DetectorHitsCollection to write to
@@ -80,7 +81,7 @@ public:
      */
     void AddEnergyPerPixel(DetectorHitsCollection *, G4int);
     /**
-     *  Adds energy of single pixel to dataset
+     *  Write trajectories
      * \param dataSetName the name of the dataset in the HDF5 file
      * \param event the event ID
      */
@@ -93,10 +94,13 @@ public:
 
     void CreateOutputFile();
 
+    void WritePixels();
+
 private:
 //     void DefineCommands();
     /** The hits collection copy from SD */
     DetectorHitsCollection *HitsCollectionCopy;
+    MpxDigitCollection *DigitCollectionCopy;
     /** */
     G4String    entryName;
     G4int       lastEvent;
@@ -107,13 +111,11 @@ private:
 
     G4int offset;
 
-    void WritePixels(std::list<MpxDetector::snglEvent> list);
-
     void CloseOutputFile(hid_t file);
 
     hid_t GetOutputFile();
 
-    hid_t PixelsDataset(hid_t file, G4int events);
+    std::list<snglEvent> sparseList;
 };
 
 #endif

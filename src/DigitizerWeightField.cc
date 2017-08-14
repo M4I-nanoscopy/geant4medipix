@@ -58,6 +58,10 @@ using namespace std;
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 DigitizerWeightField::DigitizerWeightField(G4String aName) : G4VDigitizerModule(aName)
 {
+    // Make the collectionName available to the DigitManager
+    G4String colName = "DigitsCollection";
+    collectionName.push_back(colName);
+
     //DetectorConstruction* detectorConstruction;
     G4RunManager *fRM = G4RunManager::GetRunManager();
     myDet = (DetectorConstructionBase *)(fRM->GetUserDetectorConstruction());
@@ -170,7 +174,7 @@ void DigitizerWeightField::Digitize()
     // And fetch the Hits Collection
     const DetectorHitsCollection *hitCollection = static_cast<const DetectorHitsCollection *>(digMan->GetHitsCollection(MpxHitCollID));
 
-    MpxDigitCollection *digitCollection = new MpxDigitCollection("MpxDigitizer", "collection");
+    digitCollection = new MpxDigitCollection("DigitizerWeightField", "DigitsCollection");
 
     map<pair<G4int, G4int>, G4double * > *inducedPixelContent = new map<pair<G4int, G4int>, G4double * >;
 
@@ -255,20 +259,23 @@ void DigitizerWeightField::Digitize()
         }
     }
 
-    //electronics
-    digitCollection = preamp->GetPixelResponse(inducedPixelContent, event);
+
+    // Electronics
+    preamp->GetPixelResponse(inducedPixelContent, digitCollection, event);
+
+    // Store the digit collection in the Digitizer Manager so it's available in the Run class
+    StoreDigiCollection(digitCollection);
 
     //add pixel events to digitizer hit collection
-    detector->AddPixelEvents(digitCollection);
+    //detector->AddPixelEvents(digitCollection);
 
     //print the contents of the digitCollection to the console
-    if (DEBUG == true) {
-        G4int n = digitCollection->GetSize();
-        G4cout << digitCollection->GetSize() << " size" << G4endl;
-        for (G4int i = 0; i < n; i++) {
-            G4cout << (*digitCollection)[i]->GetEvent() << " " << (*digitCollection)[i]->GetColumn() << " " << (*digitCollection)[i]->GetLine() << " " << (*digitCollection)[i]->GetEnergy() << G4endl;
-        }
+    /*
+    G4int n = digitCollection->GetSize();
+    for (G4int i = 0; i < n; i++) {
+        G4cout << (*digitCollection)[i]->GetEvent() << " " << (*digitCollection)[i]->GetColumn() << " " << (*digitCollection)[i]->GetLine() << " " << (*digitCollection)[i]->GetEnergy() << G4endl;
     }
+     */
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

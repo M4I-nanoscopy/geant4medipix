@@ -43,9 +43,8 @@ ExportMgr *ExportMgr::instance = 0;
 ExportMgr::ExportMgr()
 {
   nbEvents = 0;
-  filename = "";
 
-  hdfExport = new ExportHDF(filename);
+  hdfExport = new ExportHDF();
   //FIXME: is this still necessary?
   //exportMgr = new MPXExport();  // decide here which export to use
 
@@ -54,24 +53,19 @@ ExportMgr::ExportMgr()
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 ExportMgr::~ExportMgr()
-{
-  delete hdfExport;
-}
+{}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-namespace
-{
-G4Mutex singletonMutex = G4MUTEX_INITIALIZER;
-}
-
 ExportMgr *ExportMgr::GetInstance()
 {
-  G4AutoLock l(&singletonMutex);
-  if (!instance) {
-      instance = new ExportMgr();
-  }
-  return instance;
+    G4bool isMaster = ! G4Threading::IsWorkerThread();
+
+    if (!instance && isMaster) {
+        instance = new ExportMgr();
+    }
+
+    return instance;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -83,31 +77,39 @@ G4Mutex AddDataMutex = G4MUTEX_INITIALIZER;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void ExportMgr::AddData(DetectorHitsCollection *HitsCollection, G4int event)
-{
-  G4AutoLock l2(&AddDataMutex);
-  // call export only when filename is set
-  if (filename != "") {
-    hdfExport->AddSingleEvents(HitsCollection, event);
-    lastEvent = event;
-    nbEvents++;
-    if (nbEvents == 1000) {
-        hdfExport->Write("/trajectories/", lastEvent);
-      nbEvents = 0;
+void ExportMgr::AddData(DetectorHitsCollection *HitsCollection, MpxDigitCollection *DigitCollection, G4int event) {
+    G4AutoLock l2(&AddDataMutex);
+
+    // call export only when filename is set
+    if (filename != "") {
+        hdfExport->AddSingleEvents(HitsCollection);
+        hdfExport->AddSingleDigits(DigitCollection);
+
+        lastEvent = event;
+        nbEvents++;
+        if (nbEvents == PIXELS_CHUNK_SIZE) {
+            hdfExport->Write("/trajectories/", lastEvent);
+            hdfExport->WritePixels();
+            nbEvents = 0;
+        }
     }
-  }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void ExportMgr::WriteData()
 {
+    G4AutoLock l2(&AddDataMutex);
+
     if (filename != "") {
         hdfExport->Write("/trajectories/", lastEvent);
+        hdfExport->WritePixels();
     }
 }
 
 void ExportMgr::CreateDataFile() {
+    G4AutoLock l2(&AddDataMutex);
+
     hdfExport->CreateOutputFile();
 }
 
@@ -115,38 +117,9 @@ void ExportMgr::CreateDataFile() {
 
 void ExportMgr::SetHDFFilename(G4String name)
 {
-  ExportMgr *mgr = this->GetInstance();
-  mgr->SetFilenameHDFexport(name);
-
-  G4cout << "DEBUG: ExportMgrSetFilename: " << name << G4endl;
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-namespace
-{
-G4Mutex SetFilenameMutex = G4MUTEX_INITIALIZER;
-}
-
-void ExportMgr::SetFilenameHDFexport(G4String name)
-{
-  G4AutoLock l2(&SetFilenameMutex);
-  hdfExport->SetFilename(name);
-  G4cout << "DEBUG: SetFilenameHDFexport: " << name << G4endl;
-
-  filename = name;
-}
-
-namespace
-{
-    G4Mutex WritePixelsMutex = G4MUTEX_INITIALIZER;
-}
-void ExportMgr::WritePixels(std::list<MpxDetector::snglEvent> list) {
-    G4AutoLock l2(&WritePixelsMutex);
-
-    G4cout << "Writing sparse pixels output per event to HDF5. Number of digits: " << list.size() << G4endl;
-
-    hdfExport->WritePixels(list);
+    G4cout << "DEBUG: SetFilenameHDFexport: " << name << G4endl;
+    hdfExport->SetFilename(name);
+    filename = name;
 }
 
 #endif

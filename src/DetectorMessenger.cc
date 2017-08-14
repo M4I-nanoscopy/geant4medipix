@@ -106,7 +106,7 @@ DetectorMessenger::DetectorMessenger(DetectorConstructionBase *Det)
     pSetDigitizerCmd->SetDefaultValue("MpxDigitizer");
     pSetDigitizerCmd->SetParameterName("choice", false);
     pSetDigitizerCmd->AvailableForStates(G4State_PreInit, G4State_Idle);
-    pSetDigitizerCmd->SetCandidates("MpxDigitizer WFDigitizer");
+    pSetDigitizerCmd->SetCandidates("DigitizerWeightField");
 
     pSetDetectorTypeCmd = new G4UIcmdWithAString("/Detector/type", this);
     pSetDetectorTypeCmd->SetGuidance("Select one Detector");
@@ -330,6 +330,9 @@ DetectorMessenger::DetectorMessenger(DetectorConstructionBase *Det)
 
     pSetStoreTrajCmd = new G4UIcmdWithABool("/Output/store", this);
     pSetStoreTrajCmd->AvailableForStates(G4State_PreInit, G4State_Idle);
+
+    pSetHdf5FilenameCmd = new G4UIcmdWithAString("/Output/hdf5", this);
+    pSetHdf5FilenameCmd->AvailableForStates(G4State_PreInit, G4State_Idle);
 }
 
 DetectorMessenger::~DetectorMessenger()
@@ -565,5 +568,8 @@ void DetectorMessenger::SetNewValue(G4UIcommand *cmd, G4String newValue)
     }
     if (cmd == pSetStoreTrajCmd) {
         Detector->SetStoreTraj(pSetStoreTrajCmd->GetNewBoolValue(newValue));
+    }
+    if (cmd == pSetHdf5FilenameCmd) {
+        Detector->SetHdf5Filename(newValue);
     }
 }

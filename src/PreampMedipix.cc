@@ -189,10 +189,8 @@ void PreampMedipix::SetTransferFunctions(){
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-MpxDigitCollection *PreampMedipix::GetPixelResponse(map<pair<G4int, G4int>, G4double *> *inducedPixelContent, G4int event)
+void PreampMedipix::GetPixelResponse(map<pair<G4int, G4int>, G4double *> *inducedPixelContent, MpxDigitCollection* digitCollection, G4int event)
 {
-    MpxDigitCollection *digitCollection = new MpxDigitCollection("MpxDigitizer", "collection");
-    
     thresholdkeV = detector->GetTpxThreshold();
     thresholdCharge = thresholdkeV * 1000 / nElectronHolePairs ;
 
@@ -201,8 +199,6 @@ MpxDigitCollection *PreampMedipix::GetPixelResponse(map<pair<G4int, G4int>, G4do
     } else if(preampType == 1){
         convolutionPreamp(inducedPixelContent, event, digitCollection);
     }
-
-    return digitCollection;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

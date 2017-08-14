@@ -148,6 +148,9 @@ public:
     inline void SetOutputFilename(G4String fname) {
         optFname = fname;
     }
+    inline void SetHdf5Filename(G4String hdf5name) {
+        hdf5Filename = hdf5name;
+    }
     inline void SetSparseOutputFilename(G4String fname) {
         sparseOptFname = fname;
     }
@@ -259,6 +262,9 @@ public:
     G4String GetConfigFilename() {
         return configFilename;
     }
+    G4String GetHdf5Filename() {
+        return hdf5Filename;
+    }
     G4String GetStoreTraj() {
         return storeTraj;
     }
@@ -316,10 +322,10 @@ private:
     G4String    optFname;
     G4String	sparseOptFname;
     G4String    configFilename;
+    G4String    hdf5Filename;
 
     DetectorMessenger *fDetectorMessenger;
     void DefineMaterials();
-
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

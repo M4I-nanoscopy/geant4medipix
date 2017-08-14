@@ -57,7 +57,9 @@ EventAction::EventAction() : G4UserEventAction(),
     fPrintModulo(10000),
     fEnergyPerEvent(0)
 {
-
+    G4DigiManager *digiManager = G4DigiManager::GetDMpointer();
+    DigitizerWeightField *wfDigitizer = new DigitizerWeightField("DigitizerWeightField");
+    digiManager->AddNewModule(wfDigitizer);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -126,11 +128,8 @@ void EventAction::EndOfEventAction(const G4Event *event)
 
     // call digitizer after every event
     G4DigiManager *digiManager = G4DigiManager::GetDMpointer();
-    DigitizerWeightField *digiModule = dynamic_cast<DigitizerWeightField *>(digiManager->FindDigitizerModule(digitizerName));
-    if (digiModule != nullptr) {
-        digiModule->Digitize();
-    }
-
+    DigitizerWeightField *digiModule = (DigitizerWeightField *) (digiManager->FindDigitizerModule(digitizerName));
+    digiModule->Digitize();
 
     if (fEnergyPerEvent > 0.) {
         //fill histogram with total energy per event

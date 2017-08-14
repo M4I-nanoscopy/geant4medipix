@@ -50,6 +50,7 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/ini_parser.hpp>
 #include <ExportMgr.hh>
+#include <RunAction.hh>
 
 // #include "../include/MpxDetector.hh"
 
@@ -224,7 +225,7 @@ void MpxDetector::WriteSparse()
 
     G4cout << "Writing sparse pixels output per event. Number of digits: " << sparseList.size() << G4endl;
 
-    //Acces to detector parameters
+    // Access to detector parameters
     G4RunManager *fRM = G4RunManager::GetRunManager();
     DetectorConstructionBase *myDet = (DetectorConstructionBase *)(fRM->GetUserDetectorConstruction());
     G4String sfname = myDet->GetSparseOutputFilename();
@@ -248,9 +249,8 @@ void MpxDetector::WriteSparse()
     }
 
 #ifdef WITH_HDF5
-    ExportMgr *mgr = ExportMgr::GetInstance();
-    //mgr->WritePixels(sparseList);
-
+    //RunAction * uSR = (RunAction * ) fRM->GetUserRunAction();
+    //uSR->getExportManager()->WritePixels(sparseList);
 #endif
     sparseList.clear();
 }

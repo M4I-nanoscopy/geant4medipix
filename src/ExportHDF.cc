@@ -51,37 +51,38 @@
 ExportHDF::ExportHDF()
 {
     HitsCollectionCopy = new DetectorHitsCollection();
+    DigitCollectionCopy = new MpxDigitCollection();
     lastEvent	= 0;
     filename    = "Medipix.h5";
     entryName   = "trajectories";
     counter 	= 1;
     offset = 0;
-    
-//     DefineCommands();
-}
-
-ExportHDF::ExportHDF(G4String name)
-{
-    filename = name;
-    HitsCollectionCopy = new DetectorHitsCollection();
-    lastEvent   = 0;
-    
-    entryName   = "trajectories";
-    counter     = 1;
-    offset = 0;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-void ExportHDF::AddSingleEvents(DetectorHitsCollection *HitsCollection, G4int event)
+void ExportHDF::AddSingleEvents(DetectorHitsCollection *HitsCollection)
 {
     for (G4int i = 0; i < (G4int) HitsCollection->GetSize(); i++) {
-
-        //hard copy of object
+        // Hard copy of object
         DetectorHit *hitDetector = (*HitsCollection) [i];
         DetectorHit *hitCopy = new DetectorHit(*hitDetector);
 
         HitsCollectionCopy->insert(hitCopy);
         counter++;
+    }
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+void ExportHDF::AddSingleDigits(MpxDigitCollection *DigitCollection)
+{
+    for (G4int i = 0; i < (G4int) DigitCollection->GetSize(); i++) {
+        // Hard copy of object
+        Digit *digit = (*DigitCollection) [i];
+        DigitCollectionCopy->insert(new Digit(*digit));
+
+        //struct snglEvent newSnglEvent =  {(uint32_t)digit->GetEvent(), (uint32_t)digit->GetColumn(),
+        //                                  (uint32_t)digit->GetLine(), (G4double)digit->GetEnergy(), (G4double)digit->GetToT(), (G4double)digit->GetToA()};
+        //sparseList.push_back(newSnglEvent);
     }
 }
 
@@ -136,6 +137,10 @@ void ExportHDF::Write(G4String dataSetName, G4int event) {
 
     G4cout << "Writing trajectories output per event to HDF5. Number of hits: " << LENGTH << G4endl;
 
+    if ( LENGTH == 0) {
+        return;
+    }
+
     // structure  and dataset
     struct s1_t {
         G4double x;
@@ -151,7 +156,11 @@ void ExportHDF::Write(G4String dataSetName, G4int event) {
     file = GetOutputFile();
 
     // Group trajectories
-    H5Gcreate1(file, dataSetName.c_str(), sizeof(file));
+    int exists = H5Lexists(file, dataSetName.c_str(), H5P_DEFAULT);
+
+    if ( exists == 0 ) {
+        H5Gcreate1(file, dataSetName.c_str(), sizeof(file));
+    }
 
     DetectorConstructionBase *det = (DetectorConstructionBase *)
             G4RunManager::GetRunManager()->GetUserDetectorConstruction();
@@ -162,7 +171,7 @@ void ExportHDF::Write(G4String dataSetName, G4int event) {
 
     s1_t *s1 = new s1_t[LENGTH];
 
-    G4int ev = 0;
+    G4int ev = (*HitsCollectionCopy)[0]->GetEvent();
     G4int temp = 0;
 
     for (size_t i = 0; i < LENGTH; i++) {
@@ -175,7 +184,6 @@ void ExportHDF::Write(G4String dataSetName, G4int event) {
                 s1[temp].y = sensorHit->GetPosition().y() / nm;
                 s1[temp].z = sensorHit->GetPosition().z() / nm;
                 s1[temp].energy = sensorHit->GetEdep() / keV;
-                temp++;
             }
             G4String tableName = dataSetName + std::to_string(ev);
             hsize_t dim[] = {(long long unsigned int) temp, 4};
@@ -185,7 +193,7 @@ void ExportHDF::Write(G4String dataSetName, G4int event) {
             H5Dclose(dataset);
             H5Sclose(space);
 
-            ev++;
+            ev = sensorHit->GetEvent();
             temp = 0;
         }
 
@@ -202,60 +210,85 @@ void ExportHDF::Write(G4String dataSetName, G4int event) {
     HitsCollectionCopy = new DetectorHitsCollection();
 }
 
-void ExportHDF::WritePixels(std::list<MpxDetector::snglEvent> list) {
-    G4int number_events = G4RunManager::GetRunManager()->GetNumberOfEventsToBeProcessed();
-    if (number_events%PIXELS_CHUNK_SIZE == 0 && offset == number_events) return;
+void ExportHDF::WritePixels() {
+    size_t number_digits = DigitCollectionCopy->GetSize();
+    //size_t number_digits = sparseList.size();
+
+    G4cout << "Writing sparse pixels output per event to HDF5. Number of digits: " << number_digits << G4endl;
+
+    if (number_digits == 0) {
+        return;
+    }
 
     DetectorConstructionBase *det = (DetectorConstructionBase *)
             G4RunManager::GetRunManager()->GetUserDetectorConstruction();
-    G4int nb = det->GetNbPixels();
-    G4double *pixels = (G4double*) calloc(PIXELS_CHUNK_SIZE * 2 * nb * nb, sizeof(G4double));
+    size_t nb = (size_t) det->GetNbPixels();
+
+    // Reserve space
+    G4double *pixels = (G4double*) calloc(2 * nb * nb, sizeof(G4double));
 
     // Handles
     hid_t file = GetOutputFile();
-    hid_t data = PixelsDataset(file, number_events);
+    hid_t space, dataset;
+    hsize_t dims[3] = {2, (hsize_t) nb, (hsize_t) nb};
 
-    G4int evv = offset;
-    for (std::list<MpxDetector::snglEvent>::const_iterator iterator = list.begin(); iterator != list.end(); ++iterator) {
-        struct MpxDetector::snglEvent e = *iterator;
-        pixels[(e.event - offset)*2*nb*nb + e.col*nb + e.line] = e.tot;
-        pixels[(e.event - offset)*2*nb*nb + nb*nb + e.col*nb + e.line] = e.toa;
+    // Group pixels
+    int exists = H5Lexists(file, "/pixels", H5P_DEFAULT);
 
-        evv = e.event;
+    if ( exists == 0 ) {
+        H5Gcreate1(file, "/pixels", sizeof(file));
     }
-    offset = evv + 1;
 
-    hsize_t offset_[4];
-    offset_[0] = ((offset-1)/PIXELS_CHUNK_SIZE)*PIXELS_CHUNK_SIZE;
-    offset_[1] = 0;
-    offset_[2] = 0;
-    offset_[3] = 0;
+    // Get first event
+    G4int event = (*DigitCollectionCopy)[0]->GetEvent();
+    //G4int event  = -1;
 
-    hsize_t size[4];
-    size[0] = offset;
-    size[1] = 2;
-    size[2] = nb;
-    size[3] = nb;
-    H5Dset_extent(data,size);
-    hid_t filespace = H5Dget_space(data);
+    //iterate over all entries in the list
+    for (size_t i = 0; i < DigitCollectionCopy->GetSize(); i++) {
+    //for (std::list<snglEvent>::const_iterator iterator = sparseList.begin(); iterator != sparseList.end(); ++iterator) {
+        //struct snglEvent e = *iterator;
 
-    hsize_t dimsext[4];
-    dimsext[0] = offset - ((offset-1)/PIXELS_CHUNK_SIZE)*PIXELS_CHUNK_SIZE;
-    dimsext[1] = 2;
-    dimsext[2] = nb;
-    dimsext[3] = nb;
+        //if ( event == -1 ) {
+        //    event = e.event;
+        //}
 
-    H5Sselect_hyperslab (filespace, H5S_SELECT_SET, offset_, NULL,
-                         dimsext, NULL);
-    hid_t memspace = H5Screate_simple (4, dimsext, NULL);
-    H5Dwrite (data, H5T_NATIVE_DOUBLE, memspace, filespace, H5P_DEFAULT, pixels);
+        Digit *d = (*DigitCollectionCopy)[i];
+
+        //if ( event != e.event) {
+        if ( event != d->GetEvent() || i == DigitCollectionCopy->GetSize() - 1) {
+
+            if ( i == DigitCollectionCopy->GetSize() - 1 ) {
+                pixels[d->GetColumn()*nb + d->GetLine()] = d->GetToT();
+                pixels[nb*nb + d->GetColumn()*nb + d->GetLine()] = d->GetToA();
+                //pixels[e.col*nb + e.line] = e.tot;
+                //pixels[nb*nb + e.col*nb + e.line] = e.toa;
+            }
+
+            G4String tableName = "/pixels/" + std::to_string(event);
+
+            // Create dataset
+            space = H5Screate_simple(3, dims, NULL);
+            dataset = H5Dcreate(file, tableName, H5T_IEEE_F64LE, space, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+
+            // Write dataset
+            H5Dwrite (dataset, H5T_IEEE_F64LE, H5S_ALL, H5S_ALL, H5P_DEFAULT, pixels);
+
+            H5Sclose(space);
+            H5Dclose(dataset);
+
+            memset(pixels, 0, 2 * nb * nb * sizeof(G4double));
+            event = d->GetEvent();
+            //event = e.event;
+        }
+
+        pixels[d->GetColumn()*nb + d->GetLine()] = d->GetToT();
+        pixels[nb*nb + d->GetColumn()*nb + d->GetLine()] = d->GetToA();
+    }
 
     // Clean up
     free(pixels);
-
-    H5Sclose(filespace);
-    H5Sclose(memspace);
-    H5Dclose (data);
+    delete DigitCollectionCopy;
+    DigitCollectionCopy = new MpxDigitCollection();
     CloseOutputFile(file);
 }
 
@@ -263,12 +296,20 @@ void ExportHDF::WritePixels(std::list<MpxDetector::snglEvent> list) {
 
 void ExportHDF::SetFilename(G4String name)
 {
+#ifdef G4MULTITHREADED
+    std::ostringstream os;
+    os << G4Threading::G4GetThreadId();
+    //name.append("_t");
+    //name.append(os.str());
+#endif
+
     filename = name;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void ExportHDF::CreateOutputFile() {
+    G4cout << "Creating HDF5 output file " << filename.c_str() << G4endl;
 
     hid_t file = H5Fcreate(filename.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
 
@@ -315,32 +356,6 @@ hid_t ExportHDF::GetOutputFile() {
 
 void ExportHDF::CloseOutputFile(hid_t file) {
     H5Fclose(file);
-}
-
-hid_t ExportHDF::PixelsDataset(hid_t file, G4int nevents) {
-    hid_t space, prop, dataset;
-    DetectorConstructionBase *det = (DetectorConstructionBase *)
-            G4RunManager::GetRunManager()->GetUserDetectorConstruction();
-    G4int nb = det->GetNbPixels();
-
-    int exists = H5Lexists(file, "/pixels", H5P_DEFAULT);
-
-    if ( exists > 0 ) {
-        dataset = H5Dopen(file, "/pixels", H5P_DEFAULT);
-    } else {
-        // Create dataset
-        hsize_t dims[4] = {(hsize_t) PIXELS_CHUNK_SIZE, 2, (hsize_t) nb, (hsize_t) nb};
-        hsize_t maxDims[4] = {H5S_UNLIMITED, 2, (hsize_t) nb, (hsize_t) nb};
-
-        space = H5Screate_simple(4, dims, maxDims);
-        prop = H5Pcreate(H5P_DATASET_CREATE);
-        H5Pset_chunk(prop, 4, dims);
-        dataset = H5Dcreate2(file, "/pixels", H5T_NATIVE_DOUBLE, space, H5P_DEFAULT, prop, H5P_DEFAULT);
-        H5Pclose(prop);
-        H5Sclose(space);
-    }
-
-    return dataset;
 }
 
 #endif

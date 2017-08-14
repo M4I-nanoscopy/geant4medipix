@@ -37,30 +37,38 @@
 class Digit : public G4VDigi
 {
 public:
-  Digit();
-  ~Digit();  
- 
-  inline G4int  GetColumn(){ return column;}
-  inline void   SetColumn(G4int col){ column = col;}
-  
-  inline G4int  GetLine(){ return line;}
-  inline void   SetLine(G4int lin){ line = lin;}
-  
-  inline G4int  GetEvent(){ return event;}
-  inline void   SetEvent(G4int ev){event = ev;}
-  
-  inline G4double   GetEnergy(){ return energy;}
-  inline void       SetEnergy(G4double en){ energy = en;}
+    Digit();
 
-  inline G4double   GetToT(){ return tot;}
-  inline void       SetToT(G4double ToT){ tot = ToT;}
+    Digit(const Digit &right);
 
-  inline G4double   GetToA(){ return toa;}
-  inline void       SetToA(G4double ToA){ toa = ToA;}
-  
-  inline G4double*  GetPreAmpResp(){ return preAmpResp;}
-  inline void       SetPreAmpResp(G4double* preAmp){ preAmpResp = preAmp;}
-  
+    ~Digit();
+    const Digit& operator=(const Digit&);
+    int operator==(const Digit&) const;
+
+    inline void* operator new(size_t);
+    inline void  operator delete(void*);
+
+    void Draw();
+    void Print();
+
+    inline G4int  GetColumn(){ return column;}
+    inline void   SetColumn(G4int col){ column = col;}
+
+    inline G4int  GetLine(){ return line;}
+    inline void   SetLine(G4int lin){ line = lin;}
+
+    inline G4int  GetEvent(){ return event;}
+    inline void   SetEvent(G4int ev){event = ev;}
+
+    inline G4double   GetEnergy(){ return energy;}
+    inline void       SetEnergy(G4double en){ energy = en;}
+
+    inline G4double   GetToT(){ return tot;}
+    inline void       SetToT(G4double ToT){ tot = ToT;}
+
+    inline G4double   GetToA(){ return toa;}
+    inline void       SetToA(G4double ToA){ toa = ToA;}
+
 private:
     G4double        energy;     //collected energy
     G4double        tot;        //ToT value
@@ -68,10 +76,27 @@ private:
     G4int           column;     //column of Pixel
     G4int           line;       //line of Pixel
     G4int           event;      //event id for spare particle based format
-    //FIXME needed?
-    G4double*       preAmpResp = NULL; //response curve
 };
 
 typedef G4TDigiCollection<Digit> MpxDigitCollection;
+
+extern G4ThreadLocal G4Allocator<Digit> *DigitAllocator;
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+inline void* Digit::operator new(size_t)
+{
+    if (!DigitAllocator) {
+        DigitAllocator = new G4Allocator<Digit>;
+    }
+    return (void*) DigitAllocator->MallocSingle();
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+inline void Digit::operator delete(void* aDigi)
+{
+    DigitAllocator->FreeSingle((Digit*) aDigi);
+}
 
 #endif

@@ -53,6 +53,10 @@ public:
      */
     static ExportMgr *GetInstance();
     /**
+     * constructor of the export manager class
+     */
+    ExportMgr();
+    /**
      * The Export manager destructor
      */
     ~ExportMgr();
@@ -61,7 +65,7 @@ public:
     * \param HitsCollection* detector hits collection
     * \param event the eventID
     */
-    void AddData(DetectorHitsCollection *, G4int);
+    void AddData(DetectorHitsCollection *, MpxDigitCollection *DigitCollection, G4int);
     /**
     * interaction data with sensor
     * \param HitsCollection* detector hits collection
@@ -77,27 +81,15 @@ public:
 
     void CreateDataFile();
 
-    void WritePixels(std::list<MpxDetector::snglEvent> list);
-
 private:
     static ExportMgr *instance;
-    /**
-     * constructor of the export manager class
-     */
-    ExportMgr();
-    /**
-     * Sets the HDF5 filename
-     * \param name the file name
-     */
-    void SetFilenameHDFexport(G4String);
-    
+
     G4int lastEvent;/**< the last event */
 
     G4int nbEvents;/**< number of events */
 
     ExportBase *hdfExport; /**< the HDFExport instance */
 
-//     G4GenericMessenger *fMessenger;/**< the messenger instance */
     G4String filename; /**< the HDF5 filename*/
 };
 

@@ -34,6 +34,7 @@
 #include "MpxDetector.hh"
 #include "globals.hh"
 #include "H5Cpp.h"
+#include "ExportMgr.hh"
 #ifndef H5_NO_NAMESPACE
 using namespace H5;
 #endif
@@ -55,12 +56,13 @@ public:
     virtual G4Run *GenerateRun();
     virtual void   BeginOfRunAction(const G4Run *);
     virtual void   EndOfRunAction(const G4Run *);
-
+    ExportMgr *getExportManager() const;
 private:
     G4Timer *timer;
     MpxDetector* detector;
     HistoManager* histoManager;
     G4GenericMessenger* fMessenger;
+    ExportMgr *exportManager;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

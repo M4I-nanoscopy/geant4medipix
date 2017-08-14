@@ -47,8 +47,6 @@
 #include "G4SystemOfUnits.hh"
 #include "G4GenericMessenger.hh"
 
-//static G4ThreadLocal Messenger *fmessenger;
-
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 RunAction::RunAction()
@@ -56,9 +54,7 @@ RunAction::RunAction()
       histoManager(0)
 {
 #ifdef WITH_HDF5
-    G4String name;
-    fMessenger = new G4GenericMessenger(this, "/Output/", "Define all file names here");
-    fMessenger->DeclareMethod("edep", &ExportMgr::SetHDFFilename, "The filename for the HDF5 export.").SetParameterName(name, true).SetStates(G4State_Idle, G4State_PreInit);
+    exportManager = new ExportMgr();
 #endif
     histoManager = new HistoManager();
     timer = new G4Timer();
@@ -77,9 +73,6 @@ RunAction::~RunAction()
 
 }
 
-
-
-
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 G4Run *RunAction::GenerateRun()
@@ -97,13 +90,6 @@ void RunAction::BeginOfRunAction(const G4Run *)
     // Build the digitizer
     G4RunManager *fRM = G4RunManager::GetRunManager();
     DetectorConstructionBase *myDet = (DetectorConstructionBase *)(fRM->GetUserDetectorConstruction());
-    G4String digitizerName = myDet->GetDigitizerName();
-    G4DigiManager *digiManager = G4DigiManager::GetDMpointer();
-
-    if (digitizerName == "WFDigitizer") {
-        DigitizerWeightField *wfDigitizer = new DigitizerWeightField("WFDigitizer");
-        digiManager->AddNewModule(wfDigitizer);
-    }
 
     // create histogram file
     G4AnalysisManager *analysisManager =  G4AnalysisManager::Instance();
@@ -113,10 +99,10 @@ void RunAction::BeginOfRunAction(const G4Run *)
 
 #ifdef WITH_HDF5
     // Create HDF5 file
-    if ( fRM->GetRunManagerType() ==  G4RunManager::masterRM ) {
-        ExportMgr *mgr = ExportMgr::GetInstance();
-        mgr->CreateDataFile();
-    }
+    //if ( fRM->GetRunManagerType() ==  G4RunManager::workerRM ) {
+        exportManager->SetHDFFilename(myDet->GetHdf5Filename());
+        exportManager->CreateDataFile();
+    //}
 #endif
 }
 
@@ -139,8 +125,7 @@ void RunAction::EndOfRunAction(const G4Run *aRun)
 
 #ifdef WITH_HDF5
       // Write trajectory data to HDF5 file
-      ExportMgr *mgr = ExportMgr::GetInstance();
-      mgr->WriteData();
+      exportManager->WriteData();
 #endif
 
     }
@@ -153,5 +138,7 @@ void RunAction::EndOfRunAction(const G4Run *aRun)
     }
 }
 
-
+ExportMgr *RunAction::getExportManager() const {
+    return exportManager;
+}
 

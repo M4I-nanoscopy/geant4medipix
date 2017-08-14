@@ -23,12 +23,12 @@
 /Timepix/mode ToT
 /Timepix/threshold 3 keV
 
-/Detector/digitizer WFDigitizer
+/Detector/digitizer DigitizerWeightField
 
 #
 ## configure output
 #
-/Output/edep g4medipix-300si-200kev.h5
+/Output/hdf5 g4medipix-300si-200kev.h5
 /Output/config electron
 /Output/sparse electron
 /Output/frames frames
@@ -72,5 +72,5 @@
 /gps/pos/centre 0. 0. 5. cm
 /gps/direction  0 0 -1
 
-/run/beamOn 4000
+/run/beamOn 100
 

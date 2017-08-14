@@ -106,6 +106,7 @@ private:
     G4UIcmdWithAString  *pSetSparseOutputFilenameCmd;
     G4UIcmdWithAString  *pSetOutputDirectoryCmd;
     G4UIcmdWithAString  *pSetConfigFilenameCmd;
+    G4UIcmdWithAString  *pSetHdf5FilenameCmd;
     G4UIcmdWithABool *pSetStoreTrajCmd;
 
     G4String 		oldPath;

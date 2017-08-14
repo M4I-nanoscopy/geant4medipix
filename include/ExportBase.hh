@@ -43,7 +43,12 @@ public:
      * 
      * 
      */
-    virtual void AddSingleEvents(DetectorHitsCollection *, G4int) = 0;
+    virtual void AddSingleEvents(DetectorHitsCollection *) = 0;
+    /**
+     *
+     *
+     */
+    virtual void AddSingleDigits(MpxDigitCollection *) = 0;
     /**
      * 
      * 
@@ -60,7 +65,7 @@ public:
      */
     virtual void SetFilename(G4String) = 0;
 
-    virtual void WritePixels(std::list<MpxDetector::snglEvent> list) = 0;
+    virtual void WritePixels() = 0;
 
     virtual void CreateOutputFile() = 0;
 

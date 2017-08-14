@@ -29,6 +29,8 @@
 
 #include "Digit.hh"
 
+G4ThreadLocal G4Allocator<Digit> *DigitAllocator = 0;
+
 Digit::Digit() :
     energy(0),
     tot(0),
@@ -40,8 +42,52 @@ Digit::Digit() :
 }
 
 Digit::~Digit()
+{}
+
+Digit::Digit(const Digit& right)
+        :G4VDigi()
 {
-    if (preAmpResp != NULL) {
-        delete[] preAmpResp;
-    }
+    energy = right.energy;
+    toa = right.toa;
+    tot = right.tot;
+    column = right.column;
+    line = right.line;
+    event = right.event;
 }
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+const Digit& Digit::operator=(const Digit& right)
+{
+    energy = right.energy;
+    toa = right.toa;
+    tot = right.tot;
+    column = right.column;
+    line = right.line;
+    event = right.event;
+    return *this;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+int Digit::operator==(const Digit& right) const
+{
+    return (
+            (energy == right.energy) &&
+            (toa == right.toa) &&
+            (tot == right.tot) &&
+            (column == right.column) &&
+            (line == right.line) &&
+            (event == right.event)
+    );
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+void Digit::Draw()
+{;}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+void Digit::Print()
+{;}

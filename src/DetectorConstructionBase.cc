@@ -98,6 +98,7 @@ DetectorConstructionBase::DetectorConstructionBase() : G4VUserDetectorConstructi
     optFname = "";
     sparseOptFname = "";
     configFilename = "";
+    hdf5Filename = "";
 
     //Collimator
     collimatorThickness = 500 * um;

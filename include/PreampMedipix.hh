@@ -48,7 +48,7 @@ public:
      * \param event number
      * \return digitcollection of pixel events
      */
-    MpxDigitCollection* GetPixelResponse(std::map<std::pair<G4int, G4int>, G4double * > *inducedPixelContent, G4int event);
+    void GetPixelResponse(std::map<std::pair<G4int, G4int>, G4double * > *inducedPixelContent, MpxDigitCollection* digitCollection, G4int event);
 
     //*digitCollection
 private:

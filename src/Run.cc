@@ -28,6 +28,9 @@
 /// \file src/Run.cc
 /// \brief Implementation of the Run class
 
+#include <G4DigiManager.hh>
+#include <RunAction.hh>
+#include <G4RunManager.hh>
 #include "Run.hh"
 
 #include "DetectorHit.hh"
@@ -43,9 +46,9 @@ Run::Run() : G4Run(),
 fEdeposit(0.),
 fEdeposit2(0.)
 {
-#ifdef WITH_HDF5
-    mgr = ExportMgr::GetInstance();
-#endif
+    G4RunManager *fRM = G4RunManager::GetRunManager();
+    RunAction * uSR = (RunAction * ) fRM->GetUserRunAction();
+    mgr = uSR->getExportManager();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -57,32 +60,24 @@ Run::~Run() {}
 void Run::RecordEvent(const G4Event *event)
 {
 #ifdef WITH_HDF5
-    DetectorHitsCollection *HitsCollection = new DetectorHitsCollection;
-    HitsCollection = static_cast<DetectorHitsCollection *>(event->GetHCofThisEvent()->GetHC(0));
+    DetectorHitsCollection *HitsCollection = (DetectorHitsCollection *)(event->GetHCofThisEvent()->GetHC(0));
+    MpxDigitCollection *DigitCollection = (MpxDigitCollection *)(event->GetDCofThisEvent()->GetDC(0));
 
     lastEvent = event->GetEventID();
-    /*for (G4int i = 1; i < HitsCollection->GetSize(); i++) {
-        if ((*HitsCollection)[i]->GetTime() < (*HitsCollection)[i-1]->GetTime()) {
-            std::cout << (*HitsCollection)[i-1]->GetTime() << "-----"
-                      << (*HitsCollection)[i]->GetTime() << std::endl;
-        }
-    }
-    std::cout << "Size : " << HitsCollection->GetSize() << std::endl;*/
-
 
     if (HitsCollection->GetSize() != 0) {
-        mgr->AddData(HitsCollection, lastEvent);
+        mgr->AddData(HitsCollection, DigitCollection, lastEvent);
     }
 #endif
 }
 
 void Run::Merge(const G4Run* run)
 {
-  const Run* localRun =  static_cast<const Run*>(run);
-//   fEdeposit  += localRun->fEdeposit;
-//   fEdeposit2 += localRun->fEdeposit2;
+    // const Run* localRun =  static_cast<const Run*>(run);
+    // fEdeposit  += localRun->fEdeposit;
+    // fEdeposit2 += localRun->fEdeposit2;
   
-  G4Run::Merge(run);
+    G4Run::Merge(run);
 }
 
 

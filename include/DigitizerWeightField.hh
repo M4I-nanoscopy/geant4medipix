@@ -52,6 +52,8 @@ public:
  
 
 private:
+    MpxDigitCollection *digitCollection;
+
     /**
      * sensor thickness
      */
