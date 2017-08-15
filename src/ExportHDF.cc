@@ -292,9 +292,8 @@ void ExportHDF::SetAttributes() {
     G4double energy =  pga->GetParticleGun()->GetParticleEnergy() / keV;
     G4double height = det->GetSensorThickness() / nm;
     G4String mat = det->GetSensorMaterial()->GetName();
-    hsize_t  dim = 1;
     // Beam energy
-    hid_t dataspace_id = H5Screate_simple(1, &dim, NULL);
+    hid_t dataspace_id = H5Screate(H5S_SCALAR);
     hid_t att_energy = H5Acreate2 (file, "beam_energy", H5T_NATIVE_DOUBLE, dataspace_id,
                                    H5P_DEFAULT, H5P_DEFAULT);
     H5Awrite(att_energy,H5T_NATIVE_DOUBLE,&energy);
@@ -304,10 +303,15 @@ void ExportHDF::SetAttributes() {
     H5Awrite(att_height,H5T_NATIVE_DOUBLE,&height);
     // Sensor material
     hid_t strr = H5Tcopy (H5T_C_S1);
-    H5Tset_size (strr, 80);
+    H5Tset_size (strr, strlen(mat));
     hid_t att_mat = H5Acreate2(file, "sensor_material", strr, dataspace_id,
                                H5P_DEFAULT, H5P_DEFAULT);
     H5Awrite (att_mat, strr, mat);
+    // Source
+    H5Tset_size (strr, strlen("g4medipix"));
+    hid_t att_source = H5Acreate2(file, "source", strr, dataspace_id,
+                               H5P_DEFAULT, H5P_DEFAULT);
+    H5Awrite (att_source, strr, "g4medipix");
 
     // Clean up
     H5Sclose(dataspace_id);
