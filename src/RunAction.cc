@@ -31,20 +31,16 @@
 #include <G4DigiManager.hh>
 #include <DigitizerWeightField.hh>
 #include "RunAction.hh"
-#include "DetectorHit.hh"
 #include "DetectorSD.hh"
 #include "HistoManager.hh"
 #include "Run.hh"
 
 #ifdef WITH_HDF5
-#include "ExportMgr.hh"
 #endif
 #include "G4Timer.hh"
 
 
 #include "G4RunManager.hh"
-#include "G4UnitsTable.hh"
-#include "G4SystemOfUnits.hh"
 #include "G4GenericMessenger.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -66,9 +62,6 @@ RunAction::RunAction()
 
 RunAction::~RunAction()
 {
-#ifdef WITH_HDF5
-    delete fMessenger; // TODO check if ok to kill here
-#endif
     delete histoManager;
 
 }
@@ -99,10 +92,11 @@ void RunAction::BeginOfRunAction(const G4Run *)
 
 #ifdef WITH_HDF5
     // Create HDF5 file
-    //if ( fRM->GetRunManagerType() ==  G4RunManager::workerRM ) {
-        exportManager->SetHDFFilename(myDet->GetHdf5Filename());
+    exportManager->SetHDFFilename(myDet->GetHdf5Filename());
+
+    if ( fRM->GetRunManagerType() ==  G4RunManager::masterRM ) {
         exportManager->CreateDataFile();
-    //}
+    }
 #endif
 }
 
@@ -122,13 +116,17 @@ void RunAction::EndOfRunAction(const G4Run *aRun)
       detector->WriteSparse();
       detector->WriteFrame();
       // detector->WriteSimulationSettings();
+    }
 
 #ifdef WITH_HDF5
-      // Write trajectory data to HDF5 file
-      exportManager->WriteData();
+    G4RunManager *fRM = G4RunManager::GetRunManager();
+
+    // Write trajectory and pixel data to HDF5 file
+    if ( fRM->GetRunManagerType() ==  G4RunManager::workerRM ) {
+        exportManager->WriteData();
+    }
 #endif
 
-    }
     // write histogram files
     // Analysis manager takes care of threads and joins files!
     G4AnalysisManager *analysisManager =  G4AnalysisManager::Instance();

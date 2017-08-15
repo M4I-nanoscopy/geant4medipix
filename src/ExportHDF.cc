@@ -32,31 +32,20 @@
 
 #include "ExportHDF.hh"
 
-#include "RunAction.hh"
 #include "DetectorConstructionBase.hh"
 
 #include "G4RunManager.hh"
 
 #include "G4SystemOfUnits.hh"
 
-#include <typeinfo>
-#include <sstream>
 #include <G4GenericMessenger.hh>
-#include <G4GeneralParticleSourceData.hh>
-#include <G4GeneralParticleSourceMessenger.hh>
-#include <G4GeneralParticleSource.hh>
-#include <PrimaryGeneratorAction.hh>
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 ExportHDF::ExportHDF()
 {
     HitsCollectionCopy = new DetectorHitsCollection();
     DigitCollectionCopy = new MpxDigitCollection();
-    lastEvent	= 0;
-    filename    = "Medipix.h5";
-    entryName   = "trajectories";
-    counter 	= 1;
-    offset = 0;
+    filename    = "g4medipix.h5";
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -71,7 +60,6 @@ void ExportHDF::AddSingleEvents(DetectorHitsCollection *HitsCollection)
         DetectorHit *hitCopy = new DetectorHit(*hitDetector);
 
         HitsCollectionCopy->insert(hitCopy);
-        counter++;
     }
 }
 
@@ -82,18 +70,14 @@ void ExportHDF::AddSingleDigits(MpxDigitCollection *DigitCollection)
         // Hard copy of object
         Digit *digit = (*DigitCollection) [i];
         DigitCollectionCopy->insert(new Digit(*digit));
-
-        //struct snglEvent newSnglEvent =  {(uint32_t)digit->GetEvent(), (uint32_t)digit->GetColumn(),
-        //                                  (uint32_t)digit->GetLine(), (G4double)digit->GetEnergy(), (G4double)digit->GetToT(), (G4double)digit->GetToA()};
-        //sparseList.push_back(newSnglEvent);
     }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-void ExportHDF::AddEnergyPerPixel(DetectorHitsCollection *HitsCollection, G4int event)
+void ExportHDF::AddEnergyPerPixel(DetectorHitsCollection *HitsCollection)
 {
     G4int nbMatch = 0;
-    G4int nbElements = HitsCollection->GetSize();
+    G4int nbElements = (G4int) HitsCollection->GetSize();
     G4int *matchArray = new G4int[nbElements];
 
     for (G4int i = 0; i < nbElements; i++) {
@@ -125,7 +109,6 @@ void ExportHDF::AddEnergyPerPixel(DetectorHitsCollection *HitsCollection, G4int 
                     }
                 }
                 HitsCollectionCopy->insert(hitCopyTmp);
-                counter++;
             }
         }
     }
@@ -135,7 +118,7 @@ void ExportHDF::AddEnergyPerPixel(DetectorHitsCollection *HitsCollection, G4int 
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void ExportHDF::Write(G4String dataSetName, G4int event) {
+void ExportHDF::Write(G4String dataSetName) {
     size_t LENGTH = HitsCollectionCopy->GetSize();
 
     G4cout << "Writing trajectories output per event to HDF5. Number of hits: " << LENGTH << G4endl;
@@ -215,7 +198,6 @@ void ExportHDF::Write(G4String dataSetName, G4int event) {
 
 void ExportHDF::WritePixels() {
     size_t number_digits = DigitCollectionCopy->GetSize();
-    //size_t number_digits = sparseList.size();
 
     G4cout << "Writing sparse pixels output per event to HDF5. Number of digits: " << number_digits << G4endl;
 
@@ -244,32 +226,21 @@ void ExportHDF::WritePixels() {
 
     // Get first event
     G4int event = (*DigitCollectionCopy)[0]->GetEvent();
-    //G4int event  = -1;
 
-    //iterate over all entries in the list
+    // Iterate over all entries in the list
     for (size_t i = 0; i < DigitCollectionCopy->GetSize(); i++) {
-    //for (std::list<snglEvent>::const_iterator iterator = sparseList.begin(); iterator != sparseList.end(); ++iterator) {
-        //struct snglEvent e = *iterator;
-
-        //if ( event == -1 ) {
-        //    event = e.event;
-        //}
 
         Digit *d = (*DigitCollectionCopy)[i];
 
-        //if ( event != e.event) {
         if ( event != d->GetEvent() || i == DigitCollectionCopy->GetSize() - 1) {
 
             if ( i == DigitCollectionCopy->GetSize() - 1 ) {
                 pixels[d->GetColumn()*nb + d->GetLine()] = d->GetToT();
                 pixels[nb*nb + d->GetColumn()*nb + d->GetLine()] = d->GetToA();
-                //pixels[e.col*nb + e.line] = e.tot;
-                //pixels[nb*nb + e.col*nb + e.line] = e.toa;
             }
 
-            G4String tableName = "/pixels/" + std::to_string(event);
-
             // Create dataset
+            G4String tableName = "/pixels/" + std::to_string(event);
             space = H5Screate_simple(3, dims, NULL);
             dataset = H5Dcreate(file, tableName, H5T_IEEE_F64LE, space, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 
@@ -281,7 +252,6 @@ void ExportHDF::WritePixels() {
 
             memset(pixels, 0, 2 * nb * nb * sizeof(G4double));
             event = d->GetEvent();
-            //event = e.event;
         }
 
         pixels[d->GetColumn()*nb + d->GetLine()] = d->GetToT();
@@ -299,12 +269,12 @@ void ExportHDF::WritePixels() {
 
 void ExportHDF::SetFilename(G4String name)
 {
-#ifdef G4MULTITHREADED
-    std::ostringstream os;
-    os << G4Threading::G4GetThreadId();
+// #ifdef G4MULTITHREADED
+    // std::ostringstream os;
+    // os << G4Threading::G4GetThreadId();
     //name.append("_t");
     //name.append(os.str());
-#endif
+// #endif
 
     filename = name;
 }

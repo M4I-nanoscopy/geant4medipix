@@ -32,12 +32,7 @@
 #include <RunAction.hh>
 #include <G4RunManager.hh>
 #include "Run.hh"
-
-#include "DetectorHit.hh"
 #include "G4SDManager.hh"
-
-#include "G4Event.hh"
-#include "G4SystemOfUnits.hh"
 
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -65,9 +60,7 @@ void Run::RecordEvent(const G4Event *event)
 
     lastEvent = event->GetEventID();
 
-    if (HitsCollection->GetSize() != 0) {
-        mgr->AddData(HitsCollection, DigitCollection, lastEvent);
-    }
+    mgr->AddData(HitsCollection, DigitCollection);
 #endif
 }
 

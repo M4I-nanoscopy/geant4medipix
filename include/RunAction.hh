@@ -61,7 +61,6 @@ private:
     G4Timer *timer;
     MpxDetector* detector;
     HistoManager* histoManager;
-    G4GenericMessenger* fMessenger;
     ExportMgr *exportManager;
 };
 

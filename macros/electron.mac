@@ -51,10 +51,10 @@
 #
 ## Configure histograms
 #
-/analysis/setFileName electron
-/analysis/h1/set 1 300  0.  100  um #edep profile
-/analysis/h1/set 2 200  0. 200. keV #edep spectrum
-/analysis/h1/set 3 200  0. 200. keV #secondary spectrum
+#/analysis/setFileName electron
+#/analysis/h1/set 1 300  0.  100  um #edep profile
+#/analysis/h1/set 2 200  0. 200. keV #edep spectrum
+#/analysis/h1/set 3 200  0. 200. keV #secondary spectrum
 
 /run/initialize
 

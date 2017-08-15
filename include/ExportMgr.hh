@@ -42,16 +42,9 @@
 #include "G4AutoLock.hh"
 #include "MpxDetector.hh"
 
-// class G4GenericMessenger;
-
 class ExportMgr
 {
 public:
-    /**
-     * Adds pixel energy to HitsCollection
-     * 
-     */
-    static ExportMgr *GetInstance();
     /**
      * constructor of the export manager class
      */
@@ -65,7 +58,7 @@ public:
     * \param HitsCollection* detector hits collection
     * \param event the eventID
     */
-    void AddData(DetectorHitsCollection *, MpxDigitCollection *DigitCollection, G4int);
+    void AddData(DetectorHitsCollection *, MpxDigitCollection *DigitCollection);
     /**
     * interaction data with sensor
     * \param HitsCollection* detector hits collection
@@ -82,10 +75,6 @@ public:
     void CreateDataFile();
 
 private:
-    static ExportMgr *instance;
-
-    G4int lastEvent;/**< the last event */
-
     G4int nbEvents;/**< number of events */
 
     ExportBase *hdfExport; /**< the HDFExport instance */

@@ -31,22 +31,12 @@
 #ifdef WITH_HDF5
 
 #include "ExportMgr.hh"
-#include "RunAction.hh"
-
-#include "ExportHDF.hh"
-
-#include "G4AutoLock.hh"
-#include "locale.h"
-
-ExportMgr *ExportMgr::instance = 0;
 
 ExportMgr::ExportMgr()
 {
   nbEvents = 0;
 
   hdfExport = new ExportHDF();
-  //FIXME: is this still necessary?
-  //exportMgr = new MPXExport();  // decide here which export to use
 
 }
 
@@ -57,19 +47,6 @@ ExportMgr::~ExportMgr()
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-ExportMgr *ExportMgr::GetInstance()
-{
-    G4bool isMaster = ! G4Threading::IsWorkerThread();
-
-    if (!instance && isMaster) {
-        instance = new ExportMgr();
-    }
-
-    return instance;
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 namespace
 {
 G4Mutex AddDataMutex = G4MUTEX_INITIALIZER;
@@ -77,7 +54,7 @@ G4Mutex AddDataMutex = G4MUTEX_INITIALIZER;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void ExportMgr::AddData(DetectorHitsCollection *HitsCollection, MpxDigitCollection *DigitCollection, G4int event) {
+void ExportMgr::AddData(DetectorHitsCollection *HitsCollection, MpxDigitCollection *DigitCollection) {
     G4AutoLock l2(&AddDataMutex);
 
     // call export only when filename is set
@@ -85,10 +62,9 @@ void ExportMgr::AddData(DetectorHitsCollection *HitsCollection, MpxDigitCollecti
         hdfExport->AddSingleEvents(HitsCollection);
         hdfExport->AddSingleDigits(DigitCollection);
 
-        lastEvent = event;
         nbEvents++;
         if (nbEvents == PIXELS_CHUNK_SIZE) {
-            hdfExport->Write("/trajectories/", lastEvent);
+            hdfExport->Write("/trajectories/");
             hdfExport->WritePixels();
             nbEvents = 0;
         }
@@ -102,7 +78,7 @@ void ExportMgr::WriteData()
     G4AutoLock l2(&AddDataMutex);
 
     if (filename != "") {
-        hdfExport->Write("/trajectories/", lastEvent);
+        hdfExport->Write("/trajectories/");
         hdfExport->WritePixels();
     }
 }
@@ -110,14 +86,15 @@ void ExportMgr::WriteData()
 void ExportMgr::CreateDataFile() {
     G4AutoLock l2(&AddDataMutex);
 
-    hdfExport->CreateOutputFile();
+    if (filename != "") {
+        hdfExport->CreateOutputFile();
+    }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void ExportMgr::SetHDFFilename(G4String name)
 {
-    G4cout << "DEBUG: SetFilenameHDFexport: " << name << G4endl;
     hdfExport->SetFilename(name);
     filename = name;
 }

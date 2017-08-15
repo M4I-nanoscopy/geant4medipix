@@ -53,12 +53,12 @@ public:
      * 
      * 
      */
-    virtual void AddEnergyPerPixel(DetectorHitsCollection *, G4int) = 0;
+    virtual void AddEnergyPerPixel(DetectorHitsCollection *) = 0;
     /**
      * 
      * 
      */
-    virtual void Write(G4String, G4int) = 0;
+    virtual void Write(G4String) = 0;
     /**
      * 
      * 

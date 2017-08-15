@@ -55,14 +55,6 @@ const int PIXELS_CHUNK_SIZE = 11;
 * 
 * this class is used to export HitsCollections to HDF5 files
 */
-struct snglEvent {
-    uint32_t event;
-    uint32_t col;
-    uint32_t line;
-    G4double energy;
-    G4double tot;
-    G4double toa;
-};
 class ExportHDF : public ExportBase
 {
 public:
@@ -79,13 +71,13 @@ public:
      * \param *HitsCollection DetectorHitsCollection to write to
      * \param event event to write
      */
-    void AddEnergyPerPixel(DetectorHitsCollection *, G4int);
+    void AddEnergyPerPixel(DetectorHitsCollection *);
     /**
      *  Write trajectories
      * \param dataSetName the name of the dataset in the HDF5 file
      * \param event the event ID
      */
-    void Write(G4String, G4int);
+    void Write(G4String);
     /**
      *  Set hdf5 file name
      * \param name sets the name
@@ -101,21 +93,10 @@ private:
     /** The hits collection copy from SD */
     DetectorHitsCollection *HitsCollectionCopy;
     MpxDigitCollection *DigitCollectionCopy;
-    /** */
-    G4String    entryName;
-    G4int       lastEvent;
-
-    G4int       writeModulo;
-    /** counter*/
-    G4int       counter;
-
-    G4int offset;
 
     void CloseOutputFile(hid_t file);
 
     hid_t GetOutputFile();
-
-    std::list<snglEvent> sparseList;
 };
 
 #endif
