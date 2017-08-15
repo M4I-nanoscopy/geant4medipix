@@ -267,7 +267,9 @@ void DigitizerWeightField::Digitize()
     StoreDigiCollection(digitCollection);
 
     //add pixel events to digitizer hit collection
-    detector->AddPixelEvents(digitCollection);
+
+    // TODO: The old export code runs from here, but has been disabled in favor of hdf5 export. This could (should?) be fixed
+    //detector->AddPixelEvents(digitCollection);
 
     //print the contents of the digitCollection to the console
     /*
