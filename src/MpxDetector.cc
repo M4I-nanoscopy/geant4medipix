@@ -223,8 +223,6 @@ void MpxDetector::WriteSparse()
 {
     G4AutoLock l3(&WriteMutex);
 
-    G4cout << "Writing sparse pixels output per event. Number of digits: " << sparseList.size() << G4endl;
-
     // Access to detector parameters
     G4RunManager *fRM = G4RunManager::GetRunManager();
     DetectorConstructionBase *myDet = (DetectorConstructionBase *)(fRM->GetUserDetectorConstruction());
@@ -232,6 +230,8 @@ void MpxDetector::WriteSparse()
 
     //binary sparse export
     if (sfname != "") {
+        G4cout << "Writing sparse pixels output per event. Number of digits: " << sparseList.size() << G4endl;
+
         std::ofstream myFile(sfname, std::ios::out | std::ios::binary | std::ios::app);
         for (std::list<snglEvent>::const_iterator iterator = sparseList.begin(); iterator != sparseList.end(); ++iterator) {
             struct snglEvent newSnglEvent = *iterator;

@@ -219,10 +219,10 @@ void ExportHDF::WritePixels() {
     hsize_t dims[3] = {2, (hsize_t) nb, (hsize_t) nb};
 
     // Group pixels
-    int exists = H5Lexists(file, "/pixels", H5P_DEFAULT);
+    int exists = H5Lexists(file, "/g4medipix", H5P_DEFAULT);
 
     if ( exists == 0 ) {
-        H5Gcreate1(file, "/pixels", sizeof(file));
+        H5Gcreate1(file, "/g4medipix", sizeof(file));
     }
 
     // Get first event
@@ -241,7 +241,7 @@ void ExportHDF::WritePixels() {
             }
 
             // Create dataset
-            G4String tableName = "/pixels/" + std::to_string(event);
+            G4String tableName = "/g4medipix/" + std::to_string(event);
             space = H5Screate_simple(3, dims, NULL);
             dataset = H5Dcreate(file, tableName, H5T_IEEE_F64LE, space, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 
