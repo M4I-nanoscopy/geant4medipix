@@ -39,6 +39,7 @@
 #include "G4SystemOfUnits.hh"
 
 #include <G4GenericMessenger.hh>
+#include <PrimaryGeneratorAction.hh>
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 ExportHDF::ExportHDF()
@@ -279,15 +280,9 @@ void ExportHDF::SetFilename(G4String name)
     filename = name;
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+void ExportHDF::SetAttributes() {
+    hid_t file = GetOutputFile();
 
-void ExportHDF::CreateOutputFile() {
-    G4cout << "Creating HDF5 output file " << filename.c_str() << G4endl;
-
-    hid_t file = H5Fcreate(filename.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
-
-    // Attributes
-    /*
     DetectorConstructionBase *det = (DetectorConstructionBase *)
             G4RunManager::GetRunManager()->GetUserDetectorConstruction();
 
@@ -298,24 +293,36 @@ void ExportHDF::CreateOutputFile() {
     G4double height = det->GetSensorThickness() / nm;
     G4String mat = det->GetSensorMaterial()->GetName();
     hsize_t  dim = 1;
+    // Beam energy
     hid_t dataspace_id = H5Screate_simple(1, &dim, NULL);
     hid_t att_energy = H5Acreate2 (file, "beam_energy", H5T_NATIVE_DOUBLE, dataspace_id,
-                               H5P_DEFAULT, H5P_DEFAULT);
+                                   H5P_DEFAULT, H5P_DEFAULT);
     H5Awrite(att_energy,H5T_NATIVE_DOUBLE,&energy);
+    // Sensor height
     hid_t att_height = H5Acreate2 (file, "sensor_height", H5T_NATIVE_DOUBLE, dataspace_id,
                                    H5P_DEFAULT, H5P_DEFAULT);
     H5Awrite(att_height,H5T_NATIVE_DOUBLE,&height);
+    // Sensor material
     hid_t strr = H5Tcopy (H5T_C_S1);
     H5Tset_size (strr, 80);
     hid_t att_mat = H5Acreate2(file, "sensor_material", strr, dataspace_id,
                                H5P_DEFAULT, H5P_DEFAULT);
     H5Awrite (att_mat, strr, mat);
 
+    // Clean up
     H5Sclose(dataspace_id);
     H5Aclose(att_energy);
     H5Aclose(att_height);
     H5Aclose(att_mat);
-     */
+    CloseOutputFile(file);
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void ExportHDF::CreateOutputFile() {
+    G4cout << "Creating HDF5 output file " << filename.c_str() << G4endl;
+
+    hid_t file = H5Fcreate(filename.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
 
     H5Fclose(file);
 }

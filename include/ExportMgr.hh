@@ -73,6 +73,7 @@ public:
     void SetHDFFilename(G4String);
 
     void CreateDataFile();
+    void SetAttributes();
 
 private:
     G4int nbEvents;/**< number of events */

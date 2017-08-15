@@ -52,6 +52,8 @@ namespace
 G4Mutex AddDataMutex = G4MUTEX_INITIALIZER;
 }
 
+bool writeAttributes = false;
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void ExportMgr::AddData(DetectorHitsCollection *HitsCollection, MpxDigitCollection *DigitCollection) {
@@ -83,6 +85,8 @@ void ExportMgr::WriteData()
     }
 }
 
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
 void ExportMgr::CreateDataFile() {
     G4AutoLock l2(&AddDataMutex);
 
@@ -98,5 +102,19 @@ void ExportMgr::SetHDFFilename(G4String name)
     hdfExport->SetFilename(name);
     filename = name;
 }
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void ExportMgr::SetAttributes()
+{
+    G4AutoLock l2(&AddDataMutex);
+
+    // Only write attributes once by using global writeAttributes bool
+    if (filename != "" && !writeAttributes) {
+        hdfExport->SetAttributes();
+        writeAttributes = true;
+    }
+}
+
 
 #endif

@@ -247,11 +247,6 @@ void MpxDetector::WriteSparse()
 
         myFile.close();
     }
-
-#ifdef WITH_HDF5
-    //RunAction * uSR = (RunAction * ) fRM->GetUserRunAction();
-    //uSR->getExportManager()->WritePixels(sparseList);
-#endif
     sparseList.clear();
 }
 
@@ -425,14 +420,11 @@ void MpxDetector::WriteSimulationSettings()
 
     G4String date(buffer);
     G4String fname = myDet->GetConfigFilename();
-    
-    //No config filename specified use date and time    
-    if (fname == "")
-    {
-      fname = date + "run_config.ini";
-    }
-    else
-    {
+
+    // Bail out if no config filename specified
+    if (fname == "") {
+      return;
+    } else {
       fname = date + "_config.ini";
     }
     using boost::property_tree::ptree;

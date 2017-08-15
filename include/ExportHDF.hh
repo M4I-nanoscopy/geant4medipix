@@ -88,6 +88,8 @@ public:
 
     void WritePixels();
 
+    void SetAttributes();
+
 private:
 //     void DefineCommands();
     /** The hits collection copy from SD */

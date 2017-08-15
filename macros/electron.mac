@@ -29,9 +29,17 @@
 ## configure output
 #
 /Output/hdf5 electron.h5
-/Output/config electron
-/Output/sparse electron
-/Output/frames frames
+
+# Write config.ini
+#/Output/config electron
+
+# Spare binary output of pixels
+#/Output/sparse electron
+
+# Output of frames in ascii
+#/Output/frames frames
+
+# Write trajectories
 /Output/store true
 
 #
