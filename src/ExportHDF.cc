@@ -64,6 +64,9 @@ void ExportHDF::AddSingleEvents(DetectorHitsCollection *HitsCollection)
 {
     for (G4int i = 0; i < (G4int) HitsCollection->GetSize(); i++) {
         // Hard copy of object
+        if (i > 0 && (*HitsCollection)[i]->GetTime() < (*HitsCollection)[i-1]->GetTime()) {
+            return;
+        }
         DetectorHit *hitDetector = (*HitsCollection) [i];
         DetectorHit *hitCopy = new DetectorHit(*hitDetector);
 

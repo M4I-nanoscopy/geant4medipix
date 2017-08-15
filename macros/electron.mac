@@ -28,7 +28,7 @@
 #
 ## configure output
 #
-/Output/hdf5 g4medipix-300si-200kev.h5
+/Output/hdf5 electron.h5
 /Output/config electron
 /Output/sparse electron
 /Output/frames frames
@@ -72,5 +72,5 @@
 /gps/pos/centre 0. 0. 5. cm
 /gps/direction  0 0 -1
 
-/run/beamOn 100
+/run/beamOn 3
 

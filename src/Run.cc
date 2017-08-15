@@ -80,6 +80,5 @@ void Run::Merge(const G4Run* run)
     G4Run::Merge(run);
 }
 
-
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
