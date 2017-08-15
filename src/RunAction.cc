@@ -94,9 +94,13 @@ void RunAction::BeginOfRunAction(const G4Run *)
     // Create HDF5 file
     exportManager->SetHDFFilename(myDet->GetHdf5Filename());
 
-    if ( fRM->GetRunManagerType() ==  G4RunManager::masterRM ) {
+#ifdef G4MULTITHREADED
+    if (fRM->GetRunManagerType() ==  G4RunManager::masterRM ) {
         exportManager->CreateDataFile();
     }
+#else
+    exportManager->CreateDataFile();
+#endif
 #endif
 }
 
@@ -120,12 +124,16 @@ void RunAction::EndOfRunAction(const G4Run *aRun)
 
 #ifdef WITH_HDF5
     G4RunManager *fRM = G4RunManager::GetRunManager();
-
+#ifdef G4MULTITHREADED
     // Write trajectory and pixel data to HDF5 file
     if ( fRM->GetRunManagerType() ==  G4RunManager::workerRM ) {
         exportManager->WriteData();
         exportManager->SetAttributes();
     }
+#else
+    exportManager->WriteData();
+    exportManager->SetAttributes();
+#endif
 #endif
 
     // write histogram files
