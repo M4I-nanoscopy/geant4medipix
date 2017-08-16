@@ -29,36 +29,25 @@
 /// \brief Main program of the  example
 
 #include "DetectorConstructionDefault.hh"
-#include "DetectorConstruction.hh"
 #include "PhysicsList.hh"
 #include "ActionInitialization.hh"
 
 #include "PrimaryGeneratorMessenger.hh"
-#include "time.h"
 
 #ifdef G4MULTITHREADED
 #include "G4MTRunManager.hh"
 #else
-
 #include "G4RunManager.hh"
-
 #endif
 
 #include "G4UImanager.hh"
-#include "G4UIcommand.hh"
-
-#include "Randomize.hh"
 
 #ifdef G4VIS_USE
-
 #include "G4VisExecutive.hh"
-
 #endif
 
 #ifdef G4UI_USE
-
 #include "G4UIExecutive.hh"
-
 #endif
 
 
@@ -105,24 +94,13 @@ int main(int argc, char **argv) {
     // Choose the Random engine
     //
     CLHEP::HepRandom::setTheEngine(new CLHEP::RanecuEngine());
-
-//     std::fstream randomFile;
-//     randomFile.open("/dev/urandom", std::ios::in | std::ios::binary);
-//     unsigned int seed;
-//     randomFile.read(reinterpret_cast<char *>(&seed), sizeof(unsigned int));
-//     randomFile.close();
-//     G4cout << "=========================================" << G4endl;
-//     G4cout << "Random seed is: " << seed << G4endl;
-//     G4cout << "=========================================" << G4endl;
-//     CLHEP::HepRandom::setTheSeed(seed);
-
-    /*G4int seed = time(NULL);
-    //possibility to set an offset to random number via environment variable "JOB_ID"
+    G4int seed = (G4int) time(NULL);
+    // Possibility to set an offset to random number via environment variable "JOB_ID"
     char *jobID = getenv("JOB_ID");
     if (jobID != nullptr)
         seed += atoi(jobID) * 4852234 * G4UniformRand();
-    //G4cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << seed << G4endl;
-    G4Random::setTheSeed(seed);*/
+    G4cout << "Seed:" << seed << G4endl;
+    G4Random::setTheSeed(seed);
 
     // Construct the default run manager
     //
@@ -135,7 +113,7 @@ int main(int argc, char **argv) {
 
     // Set mandatory initialization classes
     //
-    DetectorConstructionBase *detConstruction = new DetectorConstructionDefault();  //or DetectorConstruction();
+    DetectorConstructionBase *detConstruction = new DetectorConstructionDefault();
     runManager->SetUserInitialization(detConstruction);
 
     PhysicsList *physicsList = new PhysicsList();
@@ -148,9 +126,7 @@ int main(int argc, char **argv) {
 
 #ifdef G4VIS_USE
     // Initialize visualization
-    G4VisManager *visManager = new G4VisExecutive;
-    // G4VisExecutive can take a verbosity argument - see /vis/verbose guidance.
-    // G4VisManager* visManager = new G4VisExecutive("Quiet");
+    G4VisManager *visManager = new G4VisExecutive("Quiet");
     visManager->Initialize();
 #endif
 
