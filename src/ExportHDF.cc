@@ -122,7 +122,7 @@ void ExportHDF::AddEnergyPerPixel(DetectorHitsCollection *HitsCollection)
 void ExportHDF::Write(G4String dataSetName) {
     size_t LENGTH = HitsCollectionCopy->GetSize();
 
-    G4cout << "Writing trajectories output per event to HDF5. Number of hits: " << LENGTH << G4endl;
+    //G4cout << "Writing trajectories output per event to HDF5. Number of hits: " << LENGTH << G4endl;
 
     if ( LENGTH == 0) {
         return;
@@ -200,7 +200,7 @@ void ExportHDF::Write(G4String dataSetName) {
 void ExportHDF::WritePixels() {
     size_t number_digits = DigitCollectionCopy->GetSize();
 
-    G4cout << "Writing sparse pixels output per event to HDF5. Number of digits: " << number_digits << G4endl;
+    //G4cout << "Writing sparse pixels output per event to HDF5. Number of digits: " << number_digits << G4endl;
 
     if (number_digits == 0) {
         return;

@@ -54,7 +54,7 @@
 
 EventAction::EventAction() : G4UserEventAction(),
     fSensorHCID(-1),
-    fPrintModulo(10000),
+    fPrintModulo(1000),
     fEnergyPerEvent(0)
 {
     G4DigiManager *digiManager = G4DigiManager::GetDMpointer();
