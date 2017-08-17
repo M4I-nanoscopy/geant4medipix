@@ -233,11 +233,15 @@ void ExportHDF::WritePixels() {
 
         Digit *d = (*DigitCollectionCopy)[i];
 
+        // Digit collection start at 1 (hence -1)
+        size_t x = (d->GetColumn() - 1)*nb + (d->GetLine() - 1);
+        size_t y = nb*nb + (d->GetColumn() - 1)*nb + (d->GetLine() - 1);
+
         if ( event != d->GetEvent() || i == DigitCollectionCopy->GetSize() - 1) {
 
             if ( i == DigitCollectionCopy->GetSize() - 1 ) {
-                pixels[d->GetColumn()*nb + d->GetLine()] = d->GetToT();
-                pixels[nb*nb + d->GetColumn()*nb + d->GetLine()] = d->GetToA();
+                pixels[x] = d->GetToT();
+                pixels[y] = d->GetToA();
             }
 
             // Create dataset
@@ -255,8 +259,8 @@ void ExportHDF::WritePixels() {
             event = d->GetEvent();
         }
 
-        pixels[d->GetColumn()*nb + d->GetLine()] = d->GetToT();
-        pixels[nb*nb + d->GetColumn()*nb + d->GetLine()] = d->GetToA();
+        pixels[x] = d->GetToT();
+        pixels[y] = d->GetToA();
     }
 
     // Clean up
@@ -317,6 +321,7 @@ void ExportHDF::SetAttributes() {
     H5Sclose(dataspace_id);
     H5Aclose(att_energy);
     H5Aclose(att_height);
+    H5Aclose(att_source);
     H5Aclose(att_mat);
     CloseOutputFile(file);
 }
