@@ -212,6 +212,9 @@ void ExportHDF::WritePixels() {
 
     // Reserve space
     G4double *pixels = (G4double*) calloc(2 * nb * nb, sizeof(G4double));
+    // Set all ToA values to NaN and all ToT values to 0
+    memset(pixels, -1, 2 * nb * nb * sizeof(G4double));
+    memset(pixels, 0, 1 * nb * nb * sizeof(G4double));
 
     // Handles
     hid_t file = GetOutputFile();
@@ -255,7 +258,10 @@ void ExportHDF::WritePixels() {
             H5Sclose(space);
             H5Dclose(dataset);
 
-            memset(pixels, 0, 2 * nb * nb * sizeof(G4double));
+            // Set all ToA values to NaN and all ToT values to 0
+            memset(pixels, -1, 2 * nb * nb * sizeof(G4double));
+            memset(pixels, 0, 1 * nb * nb * sizeof(G4double));
+
             event = d->GetEvent();
         }
 
