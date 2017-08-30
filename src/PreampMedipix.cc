@@ -520,8 +520,7 @@ void PreampMedipix::convolutionPreamp(map<pair<G4int, G4int>, G4double *> *induc
             pair<G4int,G4int>iteratePixel = mainPixel;
 
             //get the preamp arrays
-            G4double* mainPreampResponse = pRItr->second;
-            G4double *tempPreampReponse, *tempPreampReponse2, *tempPreampReponse3;
+            G4double *tempPreampReponse;
             //sum the responses
             G4double* csmSumPreamp = new G4double[nAmpResponseElements]();
 
@@ -600,7 +599,7 @@ void PreampMedipix::convolutionPreamp(map<pair<G4int, G4int>, G4double *> *induc
             //compare neighbouring pixels with main pixel
             for(G4int i=compArrLow; i<=compArrHigh; i++){
                 for(G4int j=compArrLow; j<=compArrHigh; j++){
-                    if(!(i == 0 & j == 0)){
+                    if(!(i == 0 && j == 0)){
                         iteratePixel = tempPixelCSM;
                         iteratePixel.first += i;
                         iteratePixel.second += j;
@@ -694,17 +693,21 @@ boost::tuple<G4double,G4double,G4double> PreampMedipix::getToTandPeak(G4double* 
 
         if(risingEdge == 0 && preamp[i] >= (threshold+thlDisp)){
             risingEdge = i;
-            //set timeOfArrival
-            if(boost::get<2>(returnValues) == 0) boost::get<2>(returnValues) = i * pulsePrecision;
+            // Set timeOfArrival
+            if(boost::get<2>(returnValues) == 0) {
+                boost::get<2>(returnValues) = i * pulsePrecision;
+            }
         }
 
         if(risingEdge != 0 && preamp[i] <= (threshold+thlDisp)){
-            //set timeOverThreshold
-            if((i - risingEdge) * pulsePrecision > boost::get<0>(returnValues)) boost::get<0>(returnValues) = (i - risingEdge) * pulsePrecision;
+            // Set timeOverThreshold
+            if((i - risingEdge) * pulsePrecision > boost::get<0>(returnValues)) {
+                boost::get<0>(returnValues) = (i - risingEdge) * pulsePrecision;
+            }
             risingEdge = 0;
         }
 
-        //set the peakCharge
+        // set the peakCharge
         if(boost::get<1>(returnValues) < (preamp[i]+thlDisp)) boost::get<1>(returnValues) = (preamp[i]+thlDisp);
     }
 
