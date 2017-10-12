@@ -34,7 +34,7 @@
 #include "DetectorHit.hh"
 #include "ExportBase.hh"
 
-#include "H5Cpp.h"
+#include "hdf5.h"
 
 #ifdef OLD_HEADER_FILENAME
 #include <iostream.h>
@@ -43,10 +43,6 @@
 #endif
 
 #include <string>
-
-#ifndef H5_NO_NAMESPACE
-using namespace H5;
-#endif
 
 const int PIXELS_CHUNK_SIZE = 100;
 

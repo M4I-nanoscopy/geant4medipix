@@ -27,10 +27,6 @@ endif ()
 set(G4MULTITHREADED ON)
 
 
-
-set(useHDF5 true)        # use true or false
-
-
 #----------------------------------------------------------------------------
 # Find Geant4 package, activating all available UI and Vis drivers by default
 # You can set WITH_GEANT4_UIVIS to OFF via the command line or ccmake/cmake-gui
@@ -47,14 +43,11 @@ endif()
 find_package(Boost COMPONENTS system filesystem REQUIRED)
 
 # Include the HDF5 library
-find_package(HDF5 COMPONENTS CXX)
+find_package(HDF5)
 if(HDF5_FOUND)
   option(WITH_HDF5 "HDF5 output enabled" ${HDF5_FOUND})
   add_definitions(-DWITH_HDF5)
-  include_directories(${HDF5_CXX_INCLUDE_DIR})
-  #add_definitions(${HDF5_hdf5_LIBRARY})
-  set(hdf5_libs hdf5_serial hdf5_cpp hdf5_hl_cpp)
-#  set(LIBS ${LIBS} ${HDF5_hdf5_cpp_LIBRARY})
+  include_directories(${HDF5_INCLUDE_DIRS})
 endif()
 
 
@@ -77,8 +70,7 @@ file(GLOB headers ${PROJECT_SOURCE_DIR}/include/*.hh)
 #
 add_executable(G4Medipix G4Medipix.cc ${sources} ${headers})
 if(HDF5_FOUND)
-  target_link_libraries(G4Medipix ${HDF5_hdf5_cpp_LIBRARY})
-  target_link_libraries(G4Medipix ${HDF5_hdf5_LIBRARY})
+  target_link_libraries(G4Medipix ${HDF5_C_LIBRARIES})
 endif()
 target_link_libraries(G4Medipix ${Geant4_LIBRARIES})
 target_link_libraries(G4Medipix ${Boost_FILESYSTEM_LIBRARY})

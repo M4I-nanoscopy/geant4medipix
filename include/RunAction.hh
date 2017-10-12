@@ -33,11 +33,8 @@
 #include "G4UserRunAction.hh"
 #include "MpxDetector.hh"
 #include "globals.hh"
-#include "H5Cpp.h"
+#include "hdf5.h"
 #include "ExportMgr.hh"
-#ifndef H5_NO_NAMESPACE
-using namespace H5;
-#endif
 class G4Run;
 class G4Timer;
 class HistoManager;
