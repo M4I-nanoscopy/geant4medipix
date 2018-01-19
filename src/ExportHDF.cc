@@ -222,16 +222,7 @@ void ExportHDF::WritePixels() {
 
     // Handles
     hid_t file = GetOutputFile();
-    hid_t space, dataset;
-    hsize_t dims[3] = {2, (hsize_t) nb, (hsize_t) nb};
-    space = H5Screate_simple(3, dims, nullptr);
-
-    // Group pixels
-    int exists = H5Lexists(file, "/g4medipix", H5P_DEFAULT);
-
-    if ( exists == 0 ) {
-        H5Gcreate1(file, "/g4medipix", sizeof(file));
-    }
+    hid_t dataset;
 
     // Get first event
     G4int event = (*DigitCollectionCopy)[0]->GetEvent();
@@ -240,6 +231,11 @@ void ExportHDF::WritePixels() {
     for (size_t i = 0; i < DigitCollectionCopy->GetSize(); i++) {
 
         Digit *d = (*DigitCollectionCopy)[i];
+
+        if (d->GetEvent() == 0) {
+            G4cout << "Found a digit with event 0. Throwing it away, not trusting it." << G4endl;
+            continue;
+        }
 
         // Digit collection start at 1 (hence -1)
         size_t x = (d->GetColumn() - 1)*nb + (d->GetLine() - 1);
@@ -252,14 +248,14 @@ void ExportHDF::WritePixels() {
                 pixels[y] = d->GetToA();
             }
 
-            G4cout << "Writing sparse pixels output per event " << event << " to HDF5. Number of digits: " << i << G4endl;
+            G4cout << "Writing sparse pixels output per event " << event << " to HDF5. Digits: " << i << G4endl;
 
-            // Create dataset
+            // Open dataset
             G4String tableName = "/g4medipix/" + std::to_string(event);
-            dataset = H5Dcreate(file, tableName, H5T_IEEE_F64LE, space, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+            dataset = H5Dopen1(file, tableName);
 
             // Write dataset
-            H5Dwrite (dataset, H5T_IEEE_F64LE, H5S_ALL, H5S_ALL, H5P_DEFAULT, pixels);
+            H5Dwrite (dataset, H5T_STD_U16BE, H5S_ALL, H5S_ALL, H5P_DEFAULT, pixels);
             H5Dclose(dataset);
             H5Fflush(H5file, H5F_SCOPE_GLOBAL);
 
@@ -278,7 +274,6 @@ void ExportHDF::WritePixels() {
     free(pixels);
     delete DigitCollectionCopy;
     DigitCollectionCopy = new MpxDigitCollection();
-    H5Sclose(space);
     CloseOutputFile();
 }
 
@@ -343,7 +338,29 @@ void ExportHDF::SetAttributes() {
 void ExportHDF::CreateOutputFile() {
     G4cout << "Creating HDF5 output file " << filename.c_str() << G4endl;
 
-    hid_t file = H5Fcreate(filename.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+    hid_t space, file;
+
+    // Create file and dataset
+    file = H5Fcreate(filename.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+    H5Gcreate1(file, "/g4medipix", sizeof(file));
+
+    // Get detector
+    auto det = (DetectorConstructionBase *)
+            G4RunManager::GetRunManager()->GetUserDetectorConstruction();
+    auto nb = (size_t) det->GetNbPixels();
+
+    // Number of events
+    G4int n_events = G4RunManager::GetRunManager()->GetNumberOfEventsToBeProcessed();
+
+    // Mem space
+    hsize_t dims[3] = {2, (hsize_t) nb, (hsize_t) nb};
+    space = H5Screate_simple(3, dims, nullptr);
+
+    // Create dataset for each event
+    for( G4int event = 0 ; event < n_events; event++) {
+        G4String tableName = "/g4medipix/" + std::to_string(event);
+        H5Dcreate(file, tableName, H5T_STD_U16BE, space, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+    }
 
     H5Fclose(file);
 }
