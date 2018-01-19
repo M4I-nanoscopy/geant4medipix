@@ -224,6 +224,7 @@ void ExportHDF::WritePixels() {
     hid_t file = GetOutputFile();
     hid_t space, dataset;
     hsize_t dims[3] = {2, (hsize_t) nb, (hsize_t) nb};
+    space = H5Screate_simple(3, dims, nullptr);
 
     // Group pixels
     int exists = H5Lexists(file, "/g4medipix", H5P_DEFAULT);
@@ -255,14 +256,12 @@ void ExportHDF::WritePixels() {
 
             // Create dataset
             G4String tableName = "/g4medipix/" + std::to_string(event);
-            space = H5Screate_simple(3, dims, NULL);
             dataset = H5Dcreate(file, tableName, H5T_IEEE_F64LE, space, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 
             // Write dataset
             H5Dwrite (dataset, H5T_IEEE_F64LE, H5S_ALL, H5S_ALL, H5P_DEFAULT, pixels);
-
-            H5Sclose(space);
             H5Dclose(dataset);
+            H5Fflush(H5file, H5F_SCOPE_GLOBAL);
 
             // Set all ToA values to NaN and all ToT values to 0
             memset(pixels, -1, 2 * nb * nb * sizeof(G4double));
@@ -279,6 +278,7 @@ void ExportHDF::WritePixels() {
     free(pixels);
     delete DigitCollectionCopy;
     DigitCollectionCopy = new MpxDigitCollection();
+    H5Sclose(space);
     CloseOutputFile();
 }
 
@@ -357,11 +357,9 @@ hid_t ExportHDF::GetOutputFile() {
 }
 
 void ExportHDF::CloseOutputFile() {
-    H5Fflush(H5file, H5F_SCOPE_GLOBAL);
     H5Fclose(H5file);
 
     G4AutoLock unlock(&HDF5Mutex);
-
 }
 
 #endif
