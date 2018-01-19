@@ -52,7 +52,7 @@ ExportHDF::ExportHDF()
 namespace
 {
     G4Mutex HDF5Mutex = G4MUTEX_INITIALIZER;
-    hid_t H5file;
+    hid_t H5file = -1;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -145,6 +145,13 @@ void ExportHDF::Write(G4String dataSetName) {
     // Handles
     hid_t file, dataset, space;
 
+    DetectorConstructionBase *det = (DetectorConstructionBase *)
+            G4RunManager::GetRunManager()->GetUserDetectorConstruction();
+
+    if (! det->storeTraj) {
+        return;
+    }
+
     // Get file
     file = GetOutputFile();
 
@@ -153,13 +160,6 @@ void ExportHDF::Write(G4String dataSetName) {
 
     if ( exists == 0 ) {
         H5Gcreate1(file, dataSetName.c_str(), sizeof(file));
-    }
-
-    DetectorConstructionBase *det = (DetectorConstructionBase *)
-            G4RunManager::GetRunManager()->GetUserDetectorConstruction();
-
-    if (! det->storeTraj) {
-        return;
     }
 
     s1_t *s1 = new s1_t[LENGTH];
@@ -333,13 +333,15 @@ void ExportHDF::SetAttributes(hid_t file) {
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void ExportHDF::CreateOutputFile() {
+    G4AutoLock lock(&HDF5Mutex);
+
     G4cout << "Creating HDF5 output file " << filename.c_str() << G4endl;
 
     hid_t space, file;
 
     // Create file and dataset
-    file = H5Fcreate(filename.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
-    H5Gcreate1(file, "/g4medipix", sizeof(file));
+    H5file = H5Fcreate(filename.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+    H5Gcreate1(H5file, "/g4medipix", sizeof(file));
 
     // Get detector
     auto det = (DetectorConstructionBase *)
@@ -356,19 +358,19 @@ void ExportHDF::CreateOutputFile() {
     // Create dataset for each event
     for( G4int event = 0 ; event < n_events; event++) {
         G4String tableName = "/g4medipix/" + std::to_string(event);
-        H5Dcreate(file, tableName, H5T_IEEE_F64LE, space, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+        H5Dcreate(H5file, tableName, H5T_IEEE_F64LE, space, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
     }
 
-    ExportHDF::SetAttributes(file);
+    // ExportHDF::SetAttributes(H5file);
 
-    H5Fflush(file, H5F_SCOPE_GLOBAL);
-    H5Fclose(file);
+    H5Fflush(H5file, H5F_SCOPE_GLOBAL);
 }
 
 hid_t ExportHDF::GetOutputFile() {
     G4AutoLock lock(&HDF5Mutex);
 
     H5file = H5Fopen(filename.c_str(), H5F_ACC_RDWR, H5P_DEFAULT);
+
 
     return H5file;
 }
