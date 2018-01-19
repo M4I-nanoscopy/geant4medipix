@@ -49,6 +49,11 @@ ExportHDF::ExportHDF()
     filename    = "g4medipix.h5";
 }
 
+namespace
+{
+    G4Mutex HDF5Mutex = G4MUTEX_INITIALIZER;
+}
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 void ExportHDF::AddSingleEvents(DetectorHitsCollection *HitsCollection)
 {
@@ -120,6 +125,8 @@ void ExportHDF::AddEnergyPerPixel(DetectorHitsCollection *HitsCollection)
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void ExportHDF::Write(G4String dataSetName) {
+    G4AutoLock l2(&HDF5Mutex);
+
     size_t LENGTH = HitsCollectionCopy->GetSize();
 
     //G4cout << "Writing trajectories output per event to HDF5. Number of hits: " << LENGTH << G4endl;
@@ -198,9 +205,11 @@ void ExportHDF::Write(G4String dataSetName) {
 }
 
 void ExportHDF::WritePixels() {
+    G4AutoLock l2(&HDF5Mutex);
+
     size_t number_digits = DigitCollectionCopy->GetSize();
 
-    //G4cout << "Writing sparse pixels output per event to HDF5. Number of digits: " << number_digits << G4endl;
+
 
     if (number_digits == 0) {
         return;
@@ -246,6 +255,8 @@ void ExportHDF::WritePixels() {
                 pixels[x] = d->GetToT();
                 pixels[y] = d->GetToA();
             }
+
+            G4cout << "Writing sparse pixels output per event " << event << " to HDF5. Number of digits: " << i << G4endl;
 
             // Create dataset
             G4String tableName = "/g4medipix/" + std::to_string(event);

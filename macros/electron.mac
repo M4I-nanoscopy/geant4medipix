@@ -28,7 +28,7 @@
 #
 ## configure output
 #
-/Output/hdf5 electron_scaling.h5
+/Output/hdf5 300kv-200si.h5
 
 # Write config.ini
 #/Output/config electron
@@ -70,7 +70,7 @@
 #
 # point source in the center towards the detector
 /gps/particle e-
-/gps/energy 200 keV
+/gps/energy 300 keV
 /gps/pos/type Plane
 /gps/pos/shape Square
 /gps/pos/halfx 27.5 um
