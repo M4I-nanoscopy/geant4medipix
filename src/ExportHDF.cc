@@ -305,17 +305,19 @@ void ExportHDF::SetAttributes() {
     DetectorConstructionBase *det = (DetectorConstructionBase *)
             G4RunManager::GetRunManager()->GetUserDetectorConstruction();
 
-    PrimaryGeneratorAction *pga = (PrimaryGeneratorAction * )
-            G4RunManager::GetRunManager()->GetUserPrimaryGeneratorAction();
-
-    G4double energy =  pga->GetParticleGun()->GetParticleEnergy() / keV;
     G4double height = det->GetSensorThickness() / nm;
     G4String mat = det->GetSensorMaterial()->GetName();
-    // Beam energy
     hid_t dataspace_id = H5Screate(H5S_SCALAR);
-    hid_t att_energy = H5Acreate2 (file, "beam_energy", H5T_NATIVE_DOUBLE, dataspace_id,
-                                   H5P_DEFAULT, H5P_DEFAULT);
-    H5Awrite(att_energy,H5T_NATIVE_DOUBLE,&energy);
+
+    // Beam energy
+//    PrimaryGeneratorAction *pga = (PrimaryGeneratorAction * )
+//    G4RunManager::GetRunManager()->GetUserPrimaryGeneratorAction();
+//    G4double energy =  pga->GetParticleGun()->GetParticleEnergy() / keV;
+//
+//    hid_t att_energy = H5Acreate2 (file, "beam_energy", H5T_NATIVE_DOUBLE, dataspace_id,
+//                               H5P_DEFAULT, H5P_DEFAULT);
+//    H5Awrite(att_energy,H5T_NATIVE_DOUBLE,&energy);
+
     // Sensor height
     hid_t att_height = H5Acreate2 (file, "sensor_height", H5T_NATIVE_DOUBLE, dataspace_id,
                                    H5P_DEFAULT, H5P_DEFAULT);
@@ -334,7 +336,7 @@ void ExportHDF::SetAttributes() {
 
     // Clean up
     H5Sclose(dataspace_id);
-    H5Aclose(att_energy);
+    //H5Aclose(att_energy);
     H5Aclose(att_height);
     H5Aclose(att_source);
     H5Aclose(att_mat);
@@ -371,6 +373,8 @@ void ExportHDF::CreateOutputFile() {
     }
 
     H5Fclose(file);
+
+    //ExportHDF::SetAttributes();
 }
 
 hid_t ExportHDF::GetOutputFile() {

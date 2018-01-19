@@ -30,6 +30,7 @@
 #include <DetectorConstructionBase.hh>
 #include <G4DigiManager.hh>
 #include <DigitizerWeightField.hh>
+#include <DetectorConstruction.hh>
 #include "RunAction.hh"
 #include "DetectorSD.hh"
 #include "HistoManager.hh"
@@ -97,6 +98,7 @@ void RunAction::BeginOfRunAction(const G4Run *)
 #ifdef G4MULTITHREADED
     if (fRM->GetRunManagerType() ==  G4RunManager::masterRM ) {
         exportManager->CreateDataFile();
+        exportManager->SetAttributes();
     }
 #else
     exportManager->CreateDataFile();
@@ -128,7 +130,6 @@ void RunAction::EndOfRunAction(const G4Run *aRun)
     // Write trajectory and pixel data to HDF5 file
     if ( fRM->GetRunManagerType() ==  G4RunManager::workerRM ) {
         exportManager->WriteData();
-        exportManager->SetAttributes();
     }
 #else
     exportManager->WriteData();
