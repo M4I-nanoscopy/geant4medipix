@@ -185,6 +185,7 @@ void ExportHDF::Write(G4String dataSetName) {
             H5Dwrite(dataset, H5T_IEEE_F64LE , H5S_ALL, H5S_ALL, H5P_DEFAULT, s1);
             H5Dclose(dataset);
             H5Sclose(space);
+            H5Fflush(file, H5F_SCOPE_GLOBAL);
 
             ev = sensorHit->GetEvent();
             temp = 0;
@@ -219,10 +220,7 @@ void ExportHDF::WritePixels() {
     size_t nb = (size_t) det->GetNbPixels();
 
     // Reserve space
-    G4double *pixels = (G4double*) calloc(2 * nb * nb, sizeof(G4double));
-    // Set all ToA values to NaN and all ToT values to 0
-    memset(pixels, -1, 2 * nb * nb * sizeof(G4double));
-    memset(pixels, 0, 1 * nb * nb * sizeof(G4double));
+    G4double *pixels = new G4double[2 * nb * nb]{0};
 
     // Handles
     hid_t file = GetOutputFile();
@@ -263,9 +261,8 @@ void ExportHDF::WritePixels() {
             H5Dclose(dataset);
             H5Fflush(file, H5F_SCOPE_GLOBAL);
 
-            // Set all ToA values to NaN and all ToT values to 0
-            memset(pixels, -1, 2 * nb * nb * sizeof(G4double));
-            memset(pixels, 0, 1 * nb * nb * sizeof(G4double));
+            // Set all ToA values to 0 and all ToT values to 0
+            memset(pixels, 0, 2 * nb * nb * sizeof(G4double));
 
             event = d->GetEvent();
         }
