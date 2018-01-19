@@ -106,18 +106,6 @@ void ExportMgr::SetHDFFilename(G4String name)
     filename = name;
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void ExportMgr::SetAttributes()
-{
-    G4AutoLock l2(&AddDataMutex);
-
-    // Only write attributes once by using global writeAttributes bool
-    if (filename != "" && !writeAttributes) {
-        hdfExport->SetAttributes();
-        writeAttributes = true;
-    }
-}
 
 
 #endif

@@ -84,7 +84,7 @@ public:
 
     void WritePixels();
 
-    void SetAttributes();
+    void SetAttributes(hid_t);
 
 private:
 //     void DefineCommands();

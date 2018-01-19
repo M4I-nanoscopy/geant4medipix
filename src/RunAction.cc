@@ -98,7 +98,6 @@ void RunAction::BeginOfRunAction(const G4Run *)
 #ifdef G4MULTITHREADED
     if (fRM->GetRunManagerType() ==  G4RunManager::masterRM ) {
         exportManager->CreateDataFile();
-        exportManager->SetAttributes();
     }
 #else
     exportManager->CreateDataFile();

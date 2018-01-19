@@ -69,8 +69,6 @@ public:
 
     virtual void CreateOutputFile() = 0;
 
-    virtual void SetAttributes() = 0;
-
 };
 
 #endif

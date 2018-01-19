@@ -261,7 +261,7 @@ void ExportHDF::WritePixels() {
             // Write dataset
             H5Dwrite (dataset, H5T_IEEE_F64LE, H5S_ALL, H5S_ALL, H5P_DEFAULT, pixels);
             H5Dclose(dataset);
-            H5Fflush(H5file, H5F_SCOPE_GLOBAL);
+            H5Fflush(file, H5F_SCOPE_GLOBAL);
 
             // Set all ToA values to NaN and all ToT values to 0
             memset(pixels, -1, 2 * nb * nb * sizeof(G4double));
@@ -299,9 +299,7 @@ void ExportHDF::SetFilename(G4String name)
     filename = name;
 }
 
-void ExportHDF::SetAttributes() {
-    hid_t file = GetOutputFile();
-
+void ExportHDF::SetAttributes(hid_t file) {
     DetectorConstructionBase *det = (DetectorConstructionBase *)
             G4RunManager::GetRunManager()->GetUserDetectorConstruction();
 
@@ -340,7 +338,6 @@ void ExportHDF::SetAttributes() {
     H5Aclose(att_height);
     H5Aclose(att_source);
     H5Aclose(att_mat);
-    CloseOutputFile();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -372,9 +369,10 @@ void ExportHDF::CreateOutputFile() {
         H5Dcreate(file, tableName, H5T_IEEE_F64LE, space, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
     }
 
-    H5Fclose(file);
+    ExportHDF::SetAttributes(file);
 
-    //ExportHDF::SetAttributes();
+    H5Fflush(file, H5F_SCOPE_GLOBAL);
+    H5Fclose(file);
 }
 
 hid_t ExportHDF::GetOutputFile() {
