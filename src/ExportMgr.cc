@@ -65,11 +65,11 @@ void ExportMgr::AddData(DetectorHitsCollection *HitsCollection, MpxDigitCollecti
         hdfExport->AddSingleDigits(DigitCollection);
 
         nbEvents++;
-        if (nbEvents == (PIXELS_CHUNK_SIZE - G4Threading::G4GetThreadId())) {
-            hdfExport->Write("/trajectories/");
-            hdfExport->WritePixels();
-            nbEvents = 0;
-        }
+//        if (nbEvents == (PIXELS_CHUNK_SIZE - G4Threading::G4GetThreadId())) {
+//            hdfExport->Write("/trajectories/");
+//            hdfExport->WritePixels();
+//            nbEvents = 0;
+//        }
     }
 }
 

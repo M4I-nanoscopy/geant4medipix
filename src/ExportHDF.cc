@@ -255,7 +255,7 @@ void ExportHDF::WritePixels() {
             dataset = H5Dopen1(file, tableName);
 
             // Write dataset
-            H5Dwrite (dataset, H5T_STD_U16BE, H5S_ALL, H5S_ALL, H5P_DEFAULT, pixels);
+            H5Dwrite (dataset, H5T_IEEE_F64LE, H5S_ALL, H5S_ALL, H5P_DEFAULT, pixels);
             H5Dclose(dataset);
             H5Fflush(H5file, H5F_SCOPE_GLOBAL);
 
@@ -359,7 +359,7 @@ void ExportHDF::CreateOutputFile() {
     // Create dataset for each event
     for( G4int event = 0 ; event < n_events; event++) {
         G4String tableName = "/g4medipix/" + std::to_string(event);
-        H5Dcreate(file, tableName, H5T_STD_U16BE, space, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+        H5Dcreate(file, tableName, H5T_IEEE_F64LE, space, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
     }
 
     H5Fclose(file);
