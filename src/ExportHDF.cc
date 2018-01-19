@@ -337,10 +337,13 @@ void ExportHDF::CreateOutputFile() {
 
     G4cout << "Creating HDF5 output file " << filename.c_str() << G4endl;
 
-    hid_t space, file;
+    hid_t space, file, fapl_id;
+
+    fapl_id = H5Pcreate(H5P_FILE_ACCESS);
+    H5Pset_fclose_degree(fapl_id, H5F_CLOSE_STRONG);
 
     // Create file and dataset
-    H5file = H5Fcreate(filename.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+    H5file = H5Fcreate(filename.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, fapl_id);
     H5Gcreate1(H5file, "/g4medipix", sizeof(file));
 
     // Get detector
@@ -364,7 +367,8 @@ void ExportHDF::CreateOutputFile() {
     // ExportHDF::SetAttributes(H5file);
 
     H5Fflush(H5file, H5F_SCOPE_GLOBAL);
-    H5Fclose(H5file);
+    herr_t e = H5Fclose(H5file);
+    G4cout << "Closed  " << H5file << " " << e << G4endl;
 }
 
 hid_t ExportHDF::GetOutputFile() {
