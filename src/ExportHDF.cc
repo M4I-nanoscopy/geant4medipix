@@ -52,6 +52,7 @@ ExportHDF::ExportHDF()
 namespace
 {
     G4Mutex HDF5Mutex = G4MUTEX_INITIALIZER;
+    hid_t H5file;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -125,8 +126,6 @@ void ExportHDF::AddEnergyPerPixel(DetectorHitsCollection *HitsCollection)
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void ExportHDF::Write(G4String dataSetName) {
-    G4AutoLock l2(&HDF5Mutex);
-
     size_t LENGTH = HitsCollectionCopy->GetSize();
 
     //G4cout << "Writing trajectories output per event to HDF5. Number of hits: " << LENGTH << G4endl;
@@ -200,16 +199,12 @@ void ExportHDF::Write(G4String dataSetName) {
 
     delete[] s1;
     delete HitsCollectionCopy;
-    CloseOutputFile(file);
+    CloseOutputFile();
     HitsCollectionCopy = new DetectorHitsCollection();
 }
 
 void ExportHDF::WritePixels() {
-    G4AutoLock l2(&HDF5Mutex);
-
     size_t number_digits = DigitCollectionCopy->GetSize();
-
-
 
     if (number_digits == 0) {
         return;
@@ -284,7 +279,7 @@ void ExportHDF::WritePixels() {
     free(pixels);
     delete DigitCollectionCopy;
     DigitCollectionCopy = new MpxDigitCollection();
-    CloseOutputFile(file);
+    CloseOutputFile();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -340,7 +335,7 @@ void ExportHDF::SetAttributes() {
     H5Aclose(att_height);
     H5Aclose(att_source);
     H5Aclose(att_mat);
-    CloseOutputFile(file);
+    CloseOutputFile();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -354,14 +349,19 @@ void ExportHDF::CreateOutputFile() {
 }
 
 hid_t ExportHDF::GetOutputFile() {
-    hid_t file;
-    file = H5Fopen(filename.c_str(), H5F_ACC_RDWR, H5P_DEFAULT);
+    G4AutoLock lock(&HDF5Mutex);
 
-    return file;
+    H5file = H5Fopen(filename.c_str(), H5F_ACC_RDWR, H5P_DEFAULT);
+
+    return H5file;
 }
 
-void ExportHDF::CloseOutputFile(hid_t file) {
-    H5Fclose(file);
+void ExportHDF::CloseOutputFile() {
+    H5Fflush(H5file, H5F_SCOPE_GLOBAL);
+    H5Fclose(H5file);
+
+    G4AutoLock unlock(&HDF5Mutex);
+
 }
 
 #endif

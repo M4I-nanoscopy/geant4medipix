@@ -92,7 +92,7 @@ private:
     DetectorHitsCollection *HitsCollectionCopy;
     MpxDigitCollection *DigitCollectionCopy;
 
-    void CloseOutputFile(hid_t file);
+    void CloseOutputFile();
 
     hid_t GetOutputFile();
 };
