@@ -197,9 +197,12 @@ void ExportHDF::Write(G4String dataSetName) {
         temp++;
     }
 
+    // Close output (first close output, then destroy memory)
+    CloseOutputFile();
     delete[] s1;
     delete HitsCollectionCopy;
-    CloseOutputFile();
+
+    // New HitsCollection
     HitsCollectionCopy = new DetectorHitsCollection();
 }
 
@@ -270,11 +273,15 @@ void ExportHDF::WritePixels() {
         pixels[y] = d->GetToA();
     }
 
+    // Close output (first close output, then destroy memory)
+    CloseOutputFile();
+
     // Clean up
     free(pixels);
     delete DigitCollectionCopy;
+
+    // Start new DigitCollection
     DigitCollectionCopy = new MpxDigitCollection();
-    CloseOutputFile();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
