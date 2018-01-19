@@ -65,6 +65,9 @@ void ExportMgr::AddData(DetectorHitsCollection *HitsCollection, MpxDigitCollecti
         hdfExport->AddSingleDigits(DigitCollection);
 
         nbEvents++;
+        // We used to write pixels and trajectories in chunks to the H5 file. This turned out to be risky in terms
+        // of segfaults and file locks. There is no real drawback to do all writing at the end (memory is big enough to
+        // hold all results)
 //        if (nbEvents == (PIXELS_CHUNK_SIZE - G4Threading::G4GetThreadId())) {
 //            hdfExport->Write("/trajectories/");
 //            hdfExport->WritePixels();

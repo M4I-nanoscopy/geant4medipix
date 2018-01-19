@@ -199,11 +199,12 @@ void ExportHDF::Write(G4String dataSetName) {
 
     // Close output (first close output, then destroy memory)
     CloseOutputFile();
-    delete[] s1;
-    delete HitsCollectionCopy;
 
+    // TODO: This causes segfaults, but as we're doing the write at programs end it doesn't matter
+    //delete[] s1;
+    //delete HitsCollectionCopy;
     // New HitsCollection
-    HitsCollectionCopy = new DetectorHitsCollection();
+    //HitsCollectionCopy = new DetectorHitsCollection();
 }
 
 void ExportHDF::WritePixels() {
@@ -277,11 +278,11 @@ void ExportHDF::WritePixels() {
     CloseOutputFile();
 
     // Clean up
-    free(pixels);
-    delete DigitCollectionCopy;
-
+    // TODO: This causes segfaults, but as we're doing the write at programs end it doesn't matter
+    //free(pixels);
+    //delete DigitCollectionCopy;
     // Start new DigitCollection
-    DigitCollectionCopy = new MpxDigitCollection();
+    //DigitCollectionCopy = new MpxDigitCollection();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
