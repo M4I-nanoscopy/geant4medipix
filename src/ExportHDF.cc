@@ -364,6 +364,7 @@ void ExportHDF::CreateOutputFile() {
     // ExportHDF::SetAttributes(H5file);
 
     H5Fflush(H5file, H5F_SCOPE_GLOBAL);
+    H5Fclose(H5file);
 }
 
 hid_t ExportHDF::GetOutputFile() {
