@@ -668,7 +668,7 @@ G4double PreampMedipix::convolve(G4double* in, G4double* out, G4int inLength, G4
 {
     G4double maxCharge = 0;
 
-    for(G4int i=0; i<=(kernel_length); i++){
+    for(G4int i=0; i<(kernel_length); i++){
 
         out[i] = 0.0;
         for(G4int k=0; k<kernel_length; k++){

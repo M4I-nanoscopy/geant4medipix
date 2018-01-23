@@ -65,7 +65,7 @@ DetectorConstructionBase::DetectorConstructionBase() : G4VUserDetectorConstructi
     collimator(false)
 {
     // some default values for now
-    nPixel = 10;
+    nPixel = 11;
     pixelSize = 110 * um;
     sensorThickness = 300 * um;
     filterThickness = 3 * um;
