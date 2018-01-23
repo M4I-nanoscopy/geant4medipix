@@ -53,6 +53,7 @@ namespace
 {
     G4Mutex HDF5Mutex = G4MUTEX_INITIALIZER;
     hid_t H5file = -1;
+    hid_t fapl_id;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -338,15 +339,15 @@ void ExportHDF::CreateOutputFile() {
 
     G4cout << "Creating HDF5 output file " << filename.c_str() << G4endl;
 
-    hid_t clusterSpace, file, fapl_id, trajSpace, clusterId, trajId;
+    hid_t clusterSpace, file, trajSpace, clusterId, trajId, clusterGroup, trajGroup;
 
     fapl_id = H5Pcreate(H5P_FILE_ACCESS);
-    H5Pset_fclose_degree(fapl_id, H5F_CLOSE_STRONG);
+    H5Pset_fclose_degree(fapl_id, H5F_CLOSE_SEMI);
 
     // Create file and dataset
     H5file = H5Fcreate(filename.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, fapl_id);
-    H5Gcreate1(H5file, "/g4medipix", sizeof(file));
-    H5Gcreate1(H5file, "/trajectories", sizeof(file));
+    clusterGroup = H5Gcreate1(H5file, "/g4medipix", sizeof(file));
+    trajGroup = H5Gcreate1(H5file, "/trajectories", sizeof(file));
 
     // Get detector
     auto det = (DetectorConstructionBase *)
@@ -375,6 +376,9 @@ void ExportHDF::CreateOutputFile() {
 
     H5Sclose(trajSpace);
     H5Sclose(clusterSpace);
+    H5Pclose(fapl_id);
+    H5Gclose(clusterGroup);
+    H5Gclose(trajGroup);
 
     // ExportHDF::SetAttributes(H5file);
 
@@ -384,10 +388,8 @@ void ExportHDF::CreateOutputFile() {
 }
 
 hid_t ExportHDF::GetOutputFile() {
-    hid_t fapl_id;
-
     fapl_id = H5Pcreate(H5P_FILE_ACCESS);
-    H5Pset_fclose_degree(fapl_id, H5F_CLOSE_STRONG);
+    H5Pset_fclose_degree(fapl_id, H5F_CLOSE_SEMI);
 
     H5file = H5Fopen(filename.c_str(), H5F_ACC_RDWR, fapl_id);
 
@@ -398,6 +400,7 @@ hid_t ExportHDF::GetOutputFile() {
 void ExportHDF::CloseOutputFile() {
     H5Fflush(H5file, H5F_SCOPE_GLOBAL);
 
+    H5Pclose(fapl_id);
     herr_t e = H5Fclose(H5file);
 
     G4cout << "Closed  " << H5file << " " << e << G4endl;
