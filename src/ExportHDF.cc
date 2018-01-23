@@ -374,14 +374,23 @@ void ExportHDF::CreateOutputFile() {
 hid_t ExportHDF::GetOutputFile() {
     G4AutoLock lock(&HDF5Mutex);
 
-    H5file = H5Fopen(filename.c_str(), H5F_ACC_RDWR, H5P_DEFAULT);
+    hid_t fapl_id;
+
+    fapl_id = H5Pcreate(H5P_FILE_ACCESS);
+    H5Pset_fclose_degree(fapl_id, H5F_CLOSE_STRONG);
+
+    H5file = H5Fopen(filename.c_str(), H5F_ACC_RDWR, fapl_id);
 
 
     return H5file;
 }
 
 void ExportHDF::CloseOutputFile() {
-    H5Fclose(H5file);
+    H5Fflush(H5file, H5F_SCOPE_GLOBAL);
+
+    herr_t e = H5Fclose(H5file);
+
+    G4cout << "Closed  " << H5file << " " << e << G4endl;
 
     G4AutoLock unlock(&HDF5Mutex);
 }
