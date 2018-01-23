@@ -40,7 +40,7 @@
 #/Output/frames frames
 
 # Write trajectories
-#/Output/store true
+/Output/store true
 
 #
 ## Set cuts
@@ -80,4 +80,3 @@
 /gps/direction  0 0 1
 
 /run/beamOn 100
-

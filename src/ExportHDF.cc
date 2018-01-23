@@ -152,6 +152,9 @@ void ExportHDF::Write(G4String dataSetName) {
         return;
     }
 
+    // Mutex lock
+    G4AutoLock autoLock(&HDF5Mutex);
+
     // Get file
     file = GetOutputFile();
 
@@ -218,6 +221,9 @@ void ExportHDF::WritePixels() {
 
     // Reserve space
     G4double *pixels = new G4double[2 * nb * nb]{0};
+
+    // Mutex lock
+    G4AutoLock autoLock(&HDF5Mutex);
 
     // Handles
     hid_t file = GetOutputFile();
@@ -333,7 +339,7 @@ void ExportHDF::SetAttributes(hid_t file) {
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void ExportHDF::CreateOutputFile() {
-    G4AutoLock lock(&HDF5Mutex);
+    G4AutoLock autoLock(&HDF5Mutex);
 
     G4cout << "Creating HDF5 output file " << filename.c_str() << G4endl;
 
@@ -372,8 +378,6 @@ void ExportHDF::CreateOutputFile() {
 }
 
 hid_t ExportHDF::GetOutputFile() {
-    G4AutoLock lock(&HDF5Mutex);
-
     hid_t fapl_id;
 
     fapl_id = H5Pcreate(H5P_FILE_ACCESS);
@@ -391,8 +395,6 @@ void ExportHDF::CloseOutputFile() {
     herr_t e = H5Fclose(H5file);
 
     G4cout << "Closed  " << H5file << " " << e << G4endl;
-
-    G4AutoLock unlock(&HDF5Mutex);
 }
 
 #endif
