@@ -143,7 +143,7 @@ void ExportHDF::Write(G4String dataSetName) {
     };
 
     // Handles
-    hid_t file, dataset, space;
+    hid_t file, dataset;
 
     DetectorConstructionBase *det = (DetectorConstructionBase *)
             G4RunManager::GetRunManager()->GetUserDetectorConstruction();
@@ -158,14 +158,9 @@ void ExportHDF::Write(G4String dataSetName) {
     // Get file
     file = GetOutputFile();
 
-    // Group trajectories
-    int exists = H5Lexists(file, dataSetName.c_str(), H5P_DEFAULT);
-
-    if ( exists == 0 ) {
-        H5Gcreate1(file, dataSetName.c_str(), sizeof(file));
-    }
-
-    s1_t *s1 = new s1_t[LENGTH];
+    // Array of structs to store
+    auto *s1 = new s1_t[200];
+    memset(s1, 0, 200 * sizeof(struct s1_t));
 
     G4int ev = (*HitsCollectionCopy)[0]->GetEvent();
     G4int temp = 0;
@@ -181,17 +176,18 @@ void ExportHDF::Write(G4String dataSetName) {
                 s1[temp].z = sensorHit->GetPosition().z() / nm;
                 s1[temp].energy = sensorHit->GetEdep() / keV;
             }
+
             G4String tableName = dataSetName + std::to_string(ev);
-            hsize_t dim[] = {(long long unsigned int) temp, 4};
-            space = H5Screate_simple(2, dim, NULL);
-            dataset = H5Dcreate(file, tableName, H5T_IEEE_F64LE, space, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+            dataset = H5Dopen1(file, tableName);
+
             H5Dwrite(dataset, H5T_IEEE_F64LE , H5S_ALL, H5S_ALL, H5P_DEFAULT, s1);
             H5Dclose(dataset);
-            H5Sclose(space);
-            H5Fflush(file, H5F_SCOPE_GLOBAL);
+
+            memset(s1, 0, 200 * sizeof(struct s1_t));
+            temp = 0;
 
             ev = sensorHit->GetEvent();
-            temp = 0;
+
         }
 
         s1[temp].x = sensorHit->GetPosition().x() / nm;
@@ -262,7 +258,6 @@ void ExportHDF::WritePixels() {
             // Write dataset
             H5Dwrite (dataset, H5T_IEEE_F64LE, H5S_ALL, H5S_ALL, H5P_DEFAULT, pixels);
             H5Dclose(dataset);
-            H5Fflush(file, H5F_SCOPE_GLOBAL);
 
             // Set all ToA values to 0 and all ToT values to 0
             memset(pixels, 0, 2 * nb * nb * sizeof(G4double));
@@ -343,7 +338,7 @@ void ExportHDF::CreateOutputFile() {
 
     G4cout << "Creating HDF5 output file " << filename.c_str() << G4endl;
 
-    hid_t space, file, fapl_id;
+    hid_t clusterSpace, file, fapl_id, trajSpace, clusterId, trajId;
 
     fapl_id = H5Pcreate(H5P_FILE_ACCESS);
     H5Pset_fclose_degree(fapl_id, H5F_CLOSE_STRONG);
@@ -351,6 +346,7 @@ void ExportHDF::CreateOutputFile() {
     // Create file and dataset
     H5file = H5Fcreate(filename.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, fapl_id);
     H5Gcreate1(H5file, "/g4medipix", sizeof(file));
+    H5Gcreate1(H5file, "/trajectories", sizeof(file));
 
     // Get detector
     auto det = (DetectorConstructionBase *)
@@ -361,14 +357,24 @@ void ExportHDF::CreateOutputFile() {
     G4int n_events = G4RunManager::GetRunManager()->GetNumberOfEventsToBeProcessed();
 
     // Mem space
-    hsize_t dims[3] = {2, (hsize_t) nb, (hsize_t) nb};
-    space = H5Screate_simple(3, dims, nullptr);
+    hsize_t dimsCluster[3] = {2, (hsize_t) nb, (hsize_t) nb};
+    clusterSpace = H5Screate_simple(3, dimsCluster, nullptr);
+    hsize_t dimsTraj[2] = {200, 4};
+    trajSpace = H5Screate_simple(2, dimsTraj, nullptr);
 
     // Create dataset for each event
     for( G4int event = 0 ; event < n_events; event++) {
-        G4String tableName = "/g4medipix/" + std::to_string(event);
-        H5Dcreate(H5file, tableName, H5T_IEEE_F64LE, space, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+        G4String clusterName = "/g4medipix/" + std::to_string(event);
+        clusterId = H5Dcreate(H5file, clusterName, H5T_IEEE_F64LE, clusterSpace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+        G4String trajName = "/trajectories/" + std::to_string(event);
+        trajId = H5Dcreate(H5file, trajName, H5T_IEEE_F64LE, trajSpace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+
+        H5Dclose(clusterId);
+        H5Dclose(trajId);
     }
+
+    H5Sclose(trajSpace);
+    H5Sclose(clusterSpace);
 
     // ExportHDF::SetAttributes(H5file);
 
