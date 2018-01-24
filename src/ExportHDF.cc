@@ -187,7 +187,7 @@ void ExportHDF::WritePixels(MpxDigitCollection *dc) {
         size_t x = (d->GetColumn() - 1)*nb + (d->GetLine() - 1);
         size_t y = nb*nb + (d->GetColumn() - 1)*nb + (d->GetLine() - 1);
 
-        if ( x > pixel_size || y >> pixel_size) {
+        if ( x > pixel_size || y > pixel_size) {
             G4cout << "Found a digit in event " << d->GetEvent() << " larger than pixel matrix. Throwing it away" << G4endl;
             continue;
         }
