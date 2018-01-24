@@ -61,17 +61,11 @@ public:
     void AddSingleEvents(DetectorHitsCollection *);
     void AddSingleDigits(MpxDigitCollection *DigitCollection);
     /**
-     *  Adds energy of single pixel to dataset
-     * \param *HitsCollection DetectorHitsCollection to write to
-     * \param event event to write
-     */
-    void AddEnergyPerPixel(DetectorHitsCollection *);
-    /**
      *  Write trajectories
      * \param dataSetName the name of the dataset in the HDF5 file
      * \param event the event ID
      */
-    void Write();
+    void Write(DetectorHitsCollection *);
     /**
      *  Set hdf5 file name
      * \param name sets the name
@@ -80,19 +74,15 @@ public:
 
     void CreateOutputFile();
 
-    void WritePixels();
+    void WritePixels(MpxDigitCollection *);
 
     void SetAttributes(hid_t);
 
 private:
-//     void DefineCommands();
-    /** The hits collection copy from SD */
-    DetectorHitsCollection *HitsCollectionCopy;
-    MpxDigitCollection *DigitCollectionCopy;
-
     void CloseOutputFile();
 
     hid_t GetOutputFile();
+    size_t MAX_TRAJ;
 };
 
 #endif

@@ -39,14 +39,12 @@
 #include "G4SystemOfUnits.hh"
 
 #include <G4GenericMessenger.hh>
-#include <PrimaryGeneratorAction.hh>
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 ExportHDF::ExportHDF()
 {
-    HitsCollectionCopy = new DetectorHitsCollection();
-    DigitCollectionCopy = new MpxDigitCollection();
     filename    = "g4medipix.h5";
+    MAX_TRAJ = 300;
 }
 
 namespace
@@ -59,77 +57,19 @@ namespace
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 void ExportHDF::AddSingleEvents(DetectorHitsCollection *HitsCollection)
 {
-    for (G4int i = 0; i < (G4int) HitsCollection->GetSize(); i++) {
-        // Hard copy of object
-        //if (i > 0 && (*HitsCollection)[i]->GetTime() < (*HitsCollection)[i-1]->GetTime()) {
-        //    return;
-        //}
-        DetectorHit *hitDetector = (*HitsCollection) [i];
-        DetectorHit *hitCopy = new DetectorHit(*hitDetector);
-
-        HitsCollectionCopy->insert(hitCopy);
-    }
+    ExportHDF::Write(HitsCollection);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 void ExportHDF::AddSingleDigits(MpxDigitCollection *DigitCollection)
 {
-    for (G4int i = 0; i < (G4int) DigitCollection->GetSize(); i++) {
-        // Hard copy of object
-        Digit *digit = (*DigitCollection) [i];
-        DigitCollectionCopy->insert(new Digit(*digit));
-    }
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-void ExportHDF::AddEnergyPerPixel(DetectorHitsCollection *HitsCollection)
-{
-    G4int nbMatch = 0;
-    G4int nbElements = (G4int) HitsCollection->GetSize();
-    G4int *matchArray = new G4int[nbElements];
-
-    for (G4int i = 0; i < nbElements; i++) {
-        matchArray[i] = 0;
-    }
-
-    while (nbMatch < nbElements) {
-
-        for (G4int i = 0; i < nbElements; i++) {
-            if (matchArray[i] == 0) {
-
-                matchArray[i] = 1;
-                nbMatch++;
-
-                //new empty hit and fill with basic info
-                DetectorHit *hitDetector = (*HitsCollection) [i];
-                DetectorHit *hitCopyTmp = new DetectorHit();
-                G4ThreeVector pos;
-                hitCopyTmp->Add(hitDetector->GetEdep(), 0., pos, hitDetector->GetColumn(), hitDetector->GetLine(), hitDetector->GetEvent(),hitDetector->GetParticleID(),hitDetector->GetTime());
-
-                for (G4int ii = i + 1; ii < nbElements; ii++) {
-                    DetectorHit *hitDetectorCompare = (*HitsCollection) [ii];
-
-                    if (hitDetectorCompare->GetLine() == hitCopyTmp->GetLine() && hitDetectorCompare->GetColumn() == hitCopyTmp->GetColumn()) {
-                        //add energy in pixel
-                        hitCopyTmp->SetEdep(hitCopyTmp->GetEdep() + hitDetectorCompare->GetEdep());
-                        nbMatch++;
-                        matchArray[ii] = 1;
-                    }
-                }
-                HitsCollectionCopy->insert(hitCopyTmp);
-            }
-        }
-    }
-
-    delete[] matchArray;
+    ExportHDF::WritePixels(DigitCollection);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void ExportHDF::Write() {
-    size_t LENGTH = HitsCollectionCopy->GetSize();
-
-    //G4cout << "Writing trajectories output per event to HDF5. Number of hits: " << LENGTH << G4endl;
+void ExportHDF::Write(DetectorHitsCollection *hc) {
+    size_t LENGTH = hc->GetSize();
 
     if ( LENGTH == 0) {
         return;
@@ -146,8 +86,7 @@ void ExportHDF::Write() {
     // Handles
     hid_t file, dataset;
 
-    DetectorConstructionBase *det = (DetectorConstructionBase *)
-            G4RunManager::GetRunManager()->GetUserDetectorConstruction();
+    auto *det = (DetectorConstructionBase *) G4RunManager::GetRunManager()->GetUserDetectorConstruction();
 
     if (! det->storeTraj) {
         return;
@@ -160,15 +99,20 @@ void ExportHDF::Write() {
     file = GetOutputFile();
 
     // Array of structs to store
-    auto *s1 = new s1_t[200];
-    memset(s1, 0, 200 * sizeof(struct s1_t));
+    auto *s1 = new s1_t[MAX_TRAJ];
+    memset(s1, 0, MAX_TRAJ * sizeof(struct s1_t));
 
-    G4int ev = (*HitsCollectionCopy)[0]->GetEvent();
+    G4int ev = (*hc)[0]->GetEvent();
     G4int temp = 0;
 
     for (size_t i = 0; i < LENGTH; i++) {
 
-        DetectorHit *sensorHit = (*HitsCollectionCopy)[i];
+        if ( i > MAX_TRAJ ) {
+            G4cout << "Found a trajectory larger than max trajectory size. Throwing it away" << G4endl;
+            break;
+        }
+
+        DetectorHit *sensorHit = (*hc)[i];
 
         if (sensorHit->GetEvent() != ev || i == LENGTH - 1) {
             if (i == LENGTH - 1) {
@@ -181,10 +125,12 @@ void ExportHDF::Write() {
             G4String tableName = "/trajectories/" + std::to_string(ev);
             dataset = H5Dopen1(file, tableName);
 
+            G4cout << "Writing trajectories event " << ev << " output to HDF5. Number of hits: " << LENGTH << G4endl;
+
             H5Dwrite(dataset, H5T_IEEE_F64LE , H5S_ALL, H5S_ALL, H5P_DEFAULT, s1);
             H5Dclose(dataset);
 
-            memset(s1, 0, 200 * sizeof(struct s1_t));
+            memset(s1, 0, MAX_TRAJ * sizeof(struct s1_t));
             temp = 0;
 
             ev = sensorHit->GetEvent();
@@ -200,24 +146,22 @@ void ExportHDF::Write() {
 
     // Close output (first close output, then destroy memory)
     CloseOutputFile();
-
-    // New HitsCollection
-    HitsCollectionCopy = new DetectorHitsCollection();
+    delete[] s1;
 }
 
-void ExportHDF::WritePixels() {
-    size_t number_digits = DigitCollectionCopy->GetSize();
+void ExportHDF::WritePixels(MpxDigitCollection *dc) {
+    size_t number_digits = dc->GetSize();
 
     if (number_digits == 0) {
         return;
     }
 
-    DetectorConstructionBase *det = (DetectorConstructionBase *)
-            G4RunManager::GetRunManager()->GetUserDetectorConstruction();
-    size_t nb = (size_t) det->GetNbPixels();
+    auto *det = (DetectorConstructionBase *)G4RunManager::GetRunManager()->GetUserDetectorConstruction();
+    auto nb = (size_t) det->GetNbPixels();
 
     // Reserve space
-    G4double *pixels = new G4double[2 * nb * nb]{0};
+    size_t pixel_size = 2 * nb * nb;
+    auto *pixels = new G4double[pixel_size]{0};
 
     // Mutex lock
     G4AutoLock autoLock(&HDF5Mutex);
@@ -227,12 +171,12 @@ void ExportHDF::WritePixels() {
     hid_t dataset;
 
     // Get first event
-    G4int event = (*DigitCollectionCopy)[0]->GetEvent();
+    G4int event = (*dc)[0]->GetEvent();
 
     // Iterate over all entries in the list
-    for (size_t i = 0; i < DigitCollectionCopy->GetSize(); i++) {
+    for (size_t i = 0; i < dc->GetSize(); i++) {
 
-        Digit *d = (*DigitCollectionCopy)[i];
+        Digit *d = (*dc)[i];
 
         if (d->GetEvent() == 0) {
             G4cout << "Found a digit with event 0. Throwing it away, not trusting it." << G4endl;
@@ -243,9 +187,14 @@ void ExportHDF::WritePixels() {
         size_t x = (d->GetColumn() - 1)*nb + (d->GetLine() - 1);
         size_t y = nb*nb + (d->GetColumn() - 1)*nb + (d->GetLine() - 1);
 
-        if ( event != d->GetEvent() || i == DigitCollectionCopy->GetSize() - 1) {
+        if ( x > pixel_size || y >> pixel_size) {
+            G4cout << "Found a digit in event " << d->GetEvent() << " larger than pixel matrix. Throwing it away" << G4endl;
+            continue;
+        }
 
-            if ( i == DigitCollectionCopy->GetSize() - 1 ) {
+        if ( event != d->GetEvent() || i == dc->GetSize() - 1) {
+
+            if ( i == dc->GetSize() - 1 ) {
                 pixels[x] = d->GetToT();
                 pixels[y] = d->GetToA();
             }
@@ -261,7 +210,7 @@ void ExportHDF::WritePixels() {
             H5Dclose(dataset);
 
             // Set all ToA values to 0 and all ToT values to 0
-            memset(pixels, 0, 2 * nb * nb * sizeof(G4double));
+            memset(pixels, 0, pixel_size * sizeof(G4double));
 
             event = d->GetEvent();
         }
@@ -272,9 +221,7 @@ void ExportHDF::WritePixels() {
 
     // Close output (first close output, then destroy memory)
     CloseOutputFile();
-
-    // Start new DigitCollection
-    DigitCollectionCopy = new MpxDigitCollection();
+    delete[] pixels;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -292,8 +239,7 @@ void ExportHDF::SetFilename(G4String name)
 }
 
 void ExportHDF::SetAttributes(hid_t file) {
-    DetectorConstructionBase *det = (DetectorConstructionBase *)
-            G4RunManager::GetRunManager()->GetUserDetectorConstruction();
+    auto *det = (DetectorConstructionBase *) G4RunManager::GetRunManager()->GetUserDetectorConstruction();
 
     G4double height = det->GetSensorThickness() / nm;
     G4String mat = det->GetSensorMaterial()->GetName();
@@ -360,7 +306,7 @@ void ExportHDF::CreateOutputFile() {
     // Mem space
     hsize_t dimsCluster[3] = {2, (hsize_t) nb, (hsize_t) nb};
     clusterSpace = H5Screate_simple(3, dimsCluster, nullptr);
-    hsize_t dimsTraj[2] = {200, 4};
+    hsize_t dimsTraj[2] = {MAX_TRAJ, 4};
     trajSpace = H5Screate_simple(2, dimsTraj, nullptr);
 
     // Create dataset for each event

@@ -31,13 +31,14 @@
 #ifdef WITH_HDF5
 
 #include <ExportRaw.hh>
+#include <ExportHDF.hh>
 #include "ExportMgr.hh"
 
 ExportMgr::ExportMgr()
 {
   nbEvents = 0;
 
-  rawExport = new ExportRaw();
+  rawExport = new ExportHDF();
 
 }
 
