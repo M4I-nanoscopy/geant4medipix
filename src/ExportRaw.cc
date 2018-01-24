@@ -80,6 +80,7 @@ void ExportRaw::AddSingleDigits(MpxDigitCollection *DigitCollection)
 
 void ExportRaw::Write(DetectorHitsCollection *hc) {
     size_t LENGTH = hc->GetSize();
+    size_t MAX_TRAJ = 1000;
 
     G4cout << "Writing trajectories output per event to raw. Number of hits: " << LENGTH << G4endl;
 
@@ -112,13 +113,13 @@ void ExportRaw::Write(DetectorHitsCollection *hc) {
     int file = GetOutputFile();
 
     // Array of structs to store
-    auto *s1 = new s1_t[200];
-    memset(s1, 0, 200 * sizeof(struct s1_t));
+    auto *s1 = new s1_t[MAX_TRAJ];
+    memset(s1, 0, MAX_TRAJ * sizeof(struct s1_t));
 
     G4int ev = (*hc)[0]->GetEvent();
     G4int temp = 0;
 
-    for (size_t i = 0; i < LENGTH; i++) {
+    for (size_t i = 0; i < MAX_TRAJ; i++) {
 
         DetectorHit *sensorHit = (*hc)[i];
 
@@ -130,7 +131,7 @@ void ExportRaw::Write(DetectorHitsCollection *hc) {
                 s1[temp].energy = sensorHit->GetEdep() / keV;
             }
 
-            memset(s1, 0, 200 * sizeof(struct s1_t));
+            memset(s1, 0, MAX_TRAJ * sizeof(struct s1_t));
             temp = 0;
 
             ev = sensorHit->GetEvent();
