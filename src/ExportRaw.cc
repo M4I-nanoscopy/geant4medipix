@@ -119,7 +119,7 @@ void ExportRaw::Write(DetectorHitsCollection *hc) {
     G4int ev = (*hc)[0]->GetEvent();
     G4int temp = 0;
 
-    for (size_t i = 0; i < MAX_TRAJ; i++) {
+    for (size_t i = 0; i < LENGTH; i++) {
 
         DetectorHit *sensorHit = (*hc)[i];
 
