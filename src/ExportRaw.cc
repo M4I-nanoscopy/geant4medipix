@@ -74,6 +74,7 @@ void ExportRaw::AddSingleDigits(MpxDigitCollection *DigitCollection)
         Digit *digit = (*DigitCollection) [i];
         DigitCollectionCopy->insert(new Digit(*digit));
     }*/
+    ExportRaw::WritePixels(DigitCollection);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -121,6 +122,11 @@ void ExportRaw::Write(DetectorHitsCollection *hc) {
 
     for (size_t i = 0; i < LENGTH; i++) {
 
+        if ( i > MAX_TRAJ ) {
+            G4cout << "Found a trajectory larger than max trajectory size. Throwing it away" << G4endl;
+            break;
+        }
+
         DetectorHit *sensorHit = (*hc)[i];
 
         if (sensorHit->GetEvent() != ev || i == LENGTH - 1) {
@@ -154,6 +160,7 @@ void ExportRaw::Write(DetectorHitsCollection *hc) {
 
 void ExportRaw::WritePixels(MpxDigitCollection *dc) {
     size_t number_digits = dc->GetSize();
+    G4cout << "Writing pixel output per event to raw. Number of hits: " << number_digits << G4endl;
 
     if (number_digits == 0) {
         return;
@@ -164,7 +171,8 @@ void ExportRaw::WritePixels(MpxDigitCollection *dc) {
     auto nb = (size_t) det->GetNbPixels();
 
     // Reserve space
-    auto *pixels = new G4double[2 * nb * nb]{0};
+    size_t pixel_size = 2 * nb * nb;
+    auto *pixels = new G4double[pixel_size]{0};
 
     // Mutex lock
     G4AutoLock autoLock(&WriteMutex);
@@ -188,6 +196,11 @@ void ExportRaw::WritePixels(MpxDigitCollection *dc) {
         // Digit collection start at 1 (hence -1)
         size_t x = (d->GetColumn() - 1)*nb + (d->GetLine() - 1);
         size_t y = nb*nb + (d->GetColumn() - 1)*nb + (d->GetLine() - 1);
+
+        if ( x > pixel_size || y >> pixel_size) {
+            G4cout << "Found a digit larger than pixel matrix. Throwing it away" << G4endl;
+            continue;
+        }
 
         if ( event != d->GetEvent() || i == dc->GetSize() - 1) {
 
