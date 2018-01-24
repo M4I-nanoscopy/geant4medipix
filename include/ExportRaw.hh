@@ -56,7 +56,7 @@ public:
      * \param dataSetName the name of the dataset in the HDF5 file
      * \param event the event ID
      */
-    void Write();
+    void Write(DetectorHitsCollection *);
     /**
      *  Set hdf5 file name
      * \param name sets the name
@@ -65,7 +65,7 @@ public:
 
     void CreateOutputFile();
 
-    void WritePixels();
+    void WritePixels(MpxDigitCollection *);
 
     void SetAttributes();
 

@@ -70,9 +70,9 @@ void ExportMgr::AddData(DetectorHitsCollection *HitsCollection, MpxDigitCollecti
         // We used to write pixels and trajectories in chunks to the H5 file. This turned out to be risky in terms
         // of segfaults and file locks. There is no real drawback to do all writing at the end (memory is big enough to
         // hold all results)
-        if (nbEvents == (10 - G4Threading::G4GetThreadId())) {
-            rawExport->Write();
-            rawExport->WritePixels();
+        if (nbEvents == (1)) {
+            //rawExport->Write();
+            //rawExport->WritePixels();
             nbEvents = 0;
         }
     }
@@ -85,8 +85,8 @@ void ExportMgr::WriteData()
     G4AutoLock l2(&AddDataMutex);
 
     if (!filename.empty()) {
-        rawExport->Write();
-        rawExport->WritePixels();
+        //rawExport->Write();
+        //rawExport->WritePixels();
     }
 }
 

@@ -53,14 +53,14 @@ public:
      * 
      * 
      */
-    virtual void Write() = 0;
+    virtual void Write(DetectorHitsCollection *) = 0;
     /**
      * 
      * 
      */
     virtual void SetFilename(G4String) = 0;
 
-    virtual void WritePixels() = 0;
+    virtual void WritePixels(MpxDigitCollection *) = 0;
 
     virtual void CreateOutputFile() = 0;
 

@@ -42,8 +42,6 @@
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 ExportRaw::ExportRaw()
 {
-    HitsCollectionCopy = new DetectorHitsCollection();
-    DigitCollectionCopy = new MpxDigitCollection();
     filename    = "g4medipix.raw";
 }
 
@@ -55,7 +53,7 @@ namespace
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 void ExportRaw::AddSingleEvents(DetectorHitsCollection *HitsCollection)
 {
-    for (G4int i = 0; i < (G4int) HitsCollection->GetSize(); i++) {
+    /*for (G4int i = 0; i < (G4int) HitsCollection->GetSize(); i++) {
         // Hard copy of object
         //if (i > 0 && (*HitsCollection)[i]->GetTime() < (*HitsCollection)[i-1]->GetTime()) {
         //    return;
@@ -64,23 +62,24 @@ void ExportRaw::AddSingleEvents(DetectorHitsCollection *HitsCollection)
         auto *hitCopy = new DetectorHit(*hitDetector);
 
         HitsCollectionCopy->insert(hitCopy);
-    }
+    }*/
+    ExportRaw::Write(HitsCollection);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 void ExportRaw::AddSingleDigits(MpxDigitCollection *DigitCollection)
 {
-    for (G4int i = 0; i < (G4int) DigitCollection->GetSize(); i++) {
+    /*for (G4int i = 0; i < (G4int) DigitCollection->GetSize(); i++) {
         // Hard copy of object
         Digit *digit = (*DigitCollection) [i];
         DigitCollectionCopy->insert(new Digit(*digit));
-    }
+    }*/
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void ExportRaw::Write() {
-    size_t LENGTH = HitsCollectionCopy->GetSize();
+void ExportRaw::Write(DetectorHitsCollection *hc) {
+    size_t LENGTH = hc->GetSize();
 
     G4cout << "Writing trajectories output per event to raw. Number of hits: " << LENGTH << G4endl;
 
@@ -116,12 +115,12 @@ void ExportRaw::Write() {
     auto *s1 = new s1_t[200];
     memset(s1, 0, 200 * sizeof(struct s1_t));
 
-    G4int ev = (*HitsCollectionCopy)[0]->GetEvent();
+    G4int ev = (*hc)[0]->GetEvent();
     G4int temp = 0;
 
     for (size_t i = 0; i < LENGTH; i++) {
 
-        DetectorHit *sensorHit = (*HitsCollectionCopy)[i];
+        DetectorHit *sensorHit = (*hc)[i];
 
         if (sensorHit->GetEvent() != ev || i == LENGTH - 1) {
             if (i == LENGTH - 1) {
@@ -149,11 +148,11 @@ void ExportRaw::Write() {
     CloseOutputFile();
 
     // New HitsCollection
-    HitsCollectionCopy = new DetectorHitsCollection();
+    delete[] s1;
 }
 
-void ExportRaw::WritePixels() {
-    size_t number_digits = DigitCollectionCopy->GetSize();
+void ExportRaw::WritePixels(MpxDigitCollection *dc) {
+    size_t number_digits = dc->GetSize();
 
     if (number_digits == 0) {
         return;
@@ -173,12 +172,12 @@ void ExportRaw::WritePixels() {
     int file = GetOutputFile();
 
     // Get first event
-    G4int event = (*DigitCollectionCopy)[0]->GetEvent();
+    G4int event = (*dc)[0]->GetEvent();
 
     // Iterate over all entries in the list
-    for (size_t i = 0; i < DigitCollectionCopy->GetSize(); i++) {
+    for (size_t i = 0; i < dc->GetSize(); i++) {
 
-        Digit *d = (*DigitCollectionCopy)[i];
+        Digit *d = (*dc)[i];
 
         if (d->GetEvent() == 0) {
             G4cout << "Found a digit with event 0. Throwing it away, not trusting it." << G4endl;
@@ -189,9 +188,9 @@ void ExportRaw::WritePixels() {
         size_t x = (d->GetColumn() - 1)*nb + (d->GetLine() - 1);
         size_t y = nb*nb + (d->GetColumn() - 1)*nb + (d->GetLine() - 1);
 
-        if ( event != d->GetEvent() || i == DigitCollectionCopy->GetSize() - 1) {
+        if ( event != d->GetEvent() || i == dc->GetSize() - 1) {
 
-            if ( i == DigitCollectionCopy->GetSize() - 1 ) {
+            if ( i == dc->GetSize() - 1 ) {
                 pixels[x] = d->GetToT();
                 pixels[y] = d->GetToA();
             }
@@ -214,7 +213,7 @@ void ExportRaw::WritePixels() {
     CloseOutputFile();
 
     // Start new DigitCollection
-    DigitCollectionCopy = new MpxDigitCollection();
+    delete[] pixels;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
