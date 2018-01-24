@@ -39,6 +39,7 @@
 #include "G4SystemOfUnits.hh"
 
 #include <G4GenericMessenger.hh>
+#include <PrimaryGeneratorAction.hh>
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 ExportHDF::ExportHDF()
@@ -81,10 +82,11 @@ void ExportHDF::Write(DetectorHitsCollection *hc) {
         G4double y;
         G4double z;
         G4double energy;
+        G4double id;
     };
 
     // Handles
-    hid_t file, dataset;
+    hid_t file, dataset, trajSpace;
 
     auto *det = (DetectorConstructionBase *) G4RunManager::GetRunManager()->GetUserDetectorConstruction();
 
@@ -120,15 +122,20 @@ void ExportHDF::Write(DetectorHitsCollection *hc) {
                 s1[temp].y = sensorHit->GetPosition().y() / nm;
                 s1[temp].z = sensorHit->GetPosition().z() / nm;
                 s1[temp].energy = sensorHit->GetEdep() / keV;
+                s1[temp].id = sensorHit->GetParticleID();
             }
 
             G4String tableName = "/trajectories/" + std::to_string(ev);
-            dataset = H5Dopen1(file, tableName);
+
+            hsize_t dim[] = {(long long unsigned int) temp, 5};
+            trajSpace = H5Screate_simple(2, dim, nullptr);
+            dataset = H5Dcreate(file, tableName, H5T_IEEE_F64LE, trajSpace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 
             // G4cout << "Writing trajectories event " << ev << " output to HDF5. Number of hits: " << LENGTH << G4endl;
 
             H5Dwrite(dataset, H5T_IEEE_F64LE , H5S_ALL, H5S_ALL, H5P_DEFAULT, s1);
             H5Dclose(dataset);
+            H5Sclose(trajSpace);
 
             memset(s1, 0, MAX_TRAJ * sizeof(struct s1_t));
             temp = 0;
@@ -238,7 +245,15 @@ void ExportHDF::SetFilename(G4String name)
     filename = name;
 }
 
-void ExportHDF::SetAttributes(hid_t file) {
+void ExportHDF::SetAttributes() {
+    // Mutex lock
+    G4AutoLock autoLock(&HDF5Mutex);
+
+    G4cout << "Setting attributes HDF5 output file " << filename.c_str() << G4endl;
+
+    // Handles
+    hid_t file = GetOutputFile();
+
     auto *det = (DetectorConstructionBase *) G4RunManager::GetRunManager()->GetUserDetectorConstruction();
 
     G4double height = det->GetSensorThickness() / nm;
@@ -246,13 +261,12 @@ void ExportHDF::SetAttributes(hid_t file) {
     hid_t dataspace_id = H5Screate(H5S_SCALAR);
 
     // Beam energy
-//    PrimaryGeneratorAction *pga = (PrimaryGeneratorAction * )
-//    G4RunManager::GetRunManager()->GetUserPrimaryGeneratorAction();
-//    G4double energy =  pga->GetParticleGun()->GetParticleEnergy() / keV;
-//
-//    hid_t att_energy = H5Acreate2 (file, "beam_energy", H5T_NATIVE_DOUBLE, dataspace_id,
-//                               H5P_DEFAULT, H5P_DEFAULT);
-//    H5Awrite(att_energy,H5T_NATIVE_DOUBLE,&energy);
+    auto *pga = (PrimaryGeneratorAction * )G4RunManager::GetRunManager()->GetUserPrimaryGeneratorAction();
+    G4double energy =  pga->GetParticleGun()->GetParticleEnergy() / keV;
+
+    hid_t att_energy = H5Acreate2 (file, "beam_energy", H5T_NATIVE_DOUBLE, dataspace_id,
+                               H5P_DEFAULT, H5P_DEFAULT);
+    H5Awrite(att_energy,H5T_NATIVE_DOUBLE,&energy);
 
     // Sensor height
     hid_t att_height = H5Acreate2 (file, "sensor_height", H5T_NATIVE_DOUBLE, dataspace_id,
@@ -272,10 +286,11 @@ void ExportHDF::SetAttributes(hid_t file) {
 
     // Clean up
     H5Sclose(dataspace_id);
-    //H5Aclose(att_energy);
+    H5Aclose(att_energy);
     H5Aclose(att_height);
     H5Aclose(att_source);
     H5Aclose(att_mat);
+    CloseOutputFile();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -285,7 +300,7 @@ void ExportHDF::CreateOutputFile() {
 
     G4cout << "Creating HDF5 output file " << filename.c_str() << G4endl;
 
-    hid_t clusterSpace, file, trajSpace, clusterId, trajId, clusterGroup, trajGroup;
+    hid_t clusterSpace, file, clusterId, clusterGroup, trajGroup;
 
     fapl_id = H5Pcreate(H5P_FILE_ACCESS);
     H5Pset_fclose_degree(fapl_id, H5F_CLOSE_SEMI);
@@ -306,27 +321,18 @@ void ExportHDF::CreateOutputFile() {
     // Mem space
     hsize_t dimsCluster[3] = {2, (hsize_t) nb, (hsize_t) nb};
     clusterSpace = H5Screate_simple(3, dimsCluster, nullptr);
-    hsize_t dimsTraj[2] = {MAX_TRAJ, 4};
-    trajSpace = H5Screate_simple(2, dimsTraj, nullptr);
 
     // Create dataset for each event
     for( G4int event = 0 ; event < n_events; event++) {
         G4String clusterName = "/g4medipix/" + std::to_string(event);
         clusterId = H5Dcreate(H5file, clusterName, H5T_IEEE_F64LE, clusterSpace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-        G4String trajName = "/trajectories/" + std::to_string(event);
-        trajId = H5Dcreate(H5file, trajName, H5T_IEEE_F64LE, trajSpace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-
         H5Dclose(clusterId);
-        H5Dclose(trajId);
     }
 
-    H5Sclose(trajSpace);
     H5Sclose(clusterSpace);
     H5Pclose(fapl_id);
     H5Gclose(clusterGroup);
     H5Gclose(trajGroup);
-
-    // ExportHDF::SetAttributes(H5file);
 
     H5Fflush(H5file, H5F_SCOPE_GLOBAL);
     H5Fclose(H5file);

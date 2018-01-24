@@ -129,6 +129,7 @@ void RunAction::EndOfRunAction(const G4Run *aRun)
     // Write trajectory and pixel data to HDF5 file
     if ( fRM->GetRunManagerType() ==  G4RunManager::workerRM ) {
         exportManager->WriteData();
+        exportManager->SetAttributes();
     }
 #else
     exportManager->WriteData();

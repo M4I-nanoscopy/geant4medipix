@@ -110,7 +110,13 @@ void ExportMgr::SetHDFFilename(G4String name)
 }
 
 void ExportMgr::SetAttributes() {
+    G4AutoLock l2(&AddDataMutex);
 
+    // Only write attributes once by using global writeAttributes bool
+    if (filename != "" && !writeAttributes) {
+        rawExport->SetAttributes();
+        writeAttributes = true;
+    }
 }
 
 

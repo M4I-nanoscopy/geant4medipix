@@ -76,7 +76,7 @@ public:
 
     void WritePixels(MpxDigitCollection *);
 
-    void SetAttributes(hid_t);
+    void SetAttributes();
 
 private:
     void CloseOutputFile();
