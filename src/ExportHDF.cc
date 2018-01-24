@@ -125,7 +125,7 @@ void ExportHDF::Write(DetectorHitsCollection *hc) {
             G4String tableName = "/trajectories/" + std::to_string(ev);
             dataset = H5Dopen1(file, tableName);
 
-            G4cout << "Writing trajectories event " << ev << " output to HDF5. Number of hits: " << LENGTH << G4endl;
+            // G4cout << "Writing trajectories event " << ev << " output to HDF5. Number of hits: " << LENGTH << G4endl;
 
             H5Dwrite(dataset, H5T_IEEE_F64LE , H5S_ALL, H5S_ALL, H5P_DEFAULT, s1);
             H5Dclose(dataset);
@@ -199,7 +199,7 @@ void ExportHDF::WritePixels(MpxDigitCollection *dc) {
                 pixels[y] = d->GetToA();
             }
 
-            G4cout << "Writing sparse pixels output per event " << event << " to HDF5. Digits: " << i << G4endl;
+            // G4cout << "Writing sparse pixels output per event " << event << " to HDF5. Digits: " << i << G4endl;
 
             // Open dataset
             G4String tableName = "/g4medipix/" + std::to_string(event);
@@ -329,8 +329,8 @@ void ExportHDF::CreateOutputFile() {
     // ExportHDF::SetAttributes(H5file);
 
     H5Fflush(H5file, H5F_SCOPE_GLOBAL);
-    herr_t e = H5Fclose(H5file);
-    G4cout << "Closed  " << H5file << " " << e << G4endl;
+    H5Fclose(H5file);
+    // G4cout << "Closed  " << H5file << " " << e << G4endl;
 }
 
 hid_t ExportHDF::GetOutputFile() {
@@ -347,9 +347,9 @@ void ExportHDF::CloseOutputFile() {
     H5Fflush(H5file, H5F_SCOPE_GLOBAL);
 
     H5Pclose(fapl_id);
-    herr_t e = H5Fclose(H5file);
+    H5Fclose(H5file);
 
-    G4cout << "Closed  " << H5file << " " << e << G4endl;
+    // G4cout << "Closed  " << H5file << " " << e << G4endl;
 }
 
 #endif
