@@ -1,5 +1,4 @@
-# Macro file for example Geant4medipix
-# 
+# Macro file for example Geantaccommodate
 # Can be run in batch, without graphic
 # or interactively: Idle> /control/execute run1.mac
 #
@@ -51,7 +50,7 @@
 #
 /Sensor/material      G4_Si
 /Sensor/thickness     300 um
-/Sensor/pixels        11
+/Sensor/pixels        15
 /Sensor/pixelSize     55 um
 /Sensor/Update
 
