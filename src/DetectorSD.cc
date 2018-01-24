@@ -38,8 +38,6 @@
 #include "G4RunManager.hh"
 #include "G4Run.hh"
 
-#include "ExportHDF.hh"
-
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 DetectorSD::DetectorSD(
