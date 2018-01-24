@@ -126,7 +126,7 @@ void ExportHDF::AddEnergyPerPixel(DetectorHitsCollection *HitsCollection)
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void ExportHDF::Write(G4String dataSetName) {
+void ExportHDF::Write() {
     size_t LENGTH = HitsCollectionCopy->GetSize();
 
     //G4cout << "Writing trajectories output per event to HDF5. Number of hits: " << LENGTH << G4endl;
@@ -178,7 +178,7 @@ void ExportHDF::Write(G4String dataSetName) {
                 s1[temp].energy = sensorHit->GetEdep() / keV;
             }
 
-            G4String tableName = dataSetName + std::to_string(ev);
+            G4String tableName = "/trajectories/" + std::to_string(ev);
             dataset = H5Dopen1(file, tableName);
 
             H5Dwrite(dataset, H5T_IEEE_F64LE , H5S_ALL, H5S_ALL, H5P_DEFAULT, s1);

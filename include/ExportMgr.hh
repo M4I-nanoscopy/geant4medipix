@@ -78,9 +78,9 @@ public:
 private:
     G4int nbEvents;/**< number of events */
 
-    ExportBase *hdfExport; /**< the HDFExport instance */
+    ExportBase *rawExport; /**< the HDFExport instance */
 
-    G4String filename; /**< the HDF5 filename*/
+    G4String filename; /**< the export filename*/
 };
 
 

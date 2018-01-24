@@ -44,8 +44,6 @@
 
 #include <string>
 
-const int PIXELS_CHUNK_SIZE = 100;
-
 
 /** ExportHDF class
 * 
@@ -73,7 +71,7 @@ public:
      * \param dataSetName the name of the dataset in the HDF5 file
      * \param event the event ID
      */
-    void Write(G4String);
+    void Write();
     /**
      *  Set hdf5 file name
      * \param name sets the name

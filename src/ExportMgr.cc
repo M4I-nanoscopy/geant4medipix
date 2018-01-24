@@ -30,13 +30,14 @@
 // #include "G4GenericMessenger.hh"
 #ifdef WITH_HDF5
 
+#include <ExportRaw.hh>
 #include "ExportMgr.hh"
 
 ExportMgr::ExportMgr()
 {
   nbEvents = 0;
 
-  hdfExport = new ExportHDF();
+  rawExport = new ExportRaw();
 
 }
 
@@ -53,6 +54,7 @@ G4Mutex AddDataMutex = G4MUTEX_INITIALIZER;
 }
 
 bool writeAttributes = false;
+const int PIXELS_CHUNK_SIZE = 100;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -60,17 +62,17 @@ void ExportMgr::AddData(DetectorHitsCollection *HitsCollection, MpxDigitCollecti
     G4AutoLock l2(&AddDataMutex);
 
     // call export only when filename is set
-    if (filename != "") {
-        hdfExport->AddSingleEvents(HitsCollection);
-        hdfExport->AddSingleDigits(DigitCollection);
+    if (!filename.empty()) {
+        rawExport->AddSingleEvents(HitsCollection);
+        rawExport->AddSingleDigits(DigitCollection);
 
         nbEvents++;
         // We used to write pixels and trajectories in chunks to the H5 file. This turned out to be risky in terms
         // of segfaults and file locks. There is no real drawback to do all writing at the end (memory is big enough to
         // hold all results)
         if (nbEvents == (10 - G4Threading::G4GetThreadId())) {
-            hdfExport->Write("/trajectories/");
-            hdfExport->WritePixels();
+            rawExport->Write();
+            rawExport->WritePixels();
             nbEvents = 0;
         }
     }
@@ -82,9 +84,9 @@ void ExportMgr::WriteData()
 {
     G4AutoLock l2(&AddDataMutex);
 
-    if (filename != "") {
-        hdfExport->Write("/trajectories/");
-        hdfExport->WritePixels();
+    if (!filename.empty()) {
+        rawExport->Write();
+        rawExport->WritePixels();
     }
 }
 
@@ -93,8 +95,8 @@ void ExportMgr::WriteData()
 void ExportMgr::CreateDataFile() {
     G4AutoLock l2(&AddDataMutex);
 
-    if (filename != "") {
-        hdfExport->CreateOutputFile();
+    if (!filename.empty()) {
+        rawExport->CreateOutputFile();
     }
 }
 
@@ -102,10 +104,13 @@ void ExportMgr::CreateDataFile() {
 
 void ExportMgr::SetHDFFilename(G4String name)
 {
-    hdfExport->SetFilename(name);
+    rawExport->SetFilename(name);
     filename = name;
 }
 
+void ExportMgr::SetAttributes() {
+
+}
 
 
 #endif

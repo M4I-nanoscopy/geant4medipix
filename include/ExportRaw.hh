@@ -24,46 +24,58 @@
 // ********************************************************************
 //
 //
-/// \file ExportBase.hh
-/// \brief Definition of the ExportBase class
-/// 
+/// \file ExportRaw.hh
+/// \brief Definition of the ExportRaw class
 
-#ifndef ExportBase_h
-#define ExportBase_h 1
 
 #include "DetectorHit.hh"
-#include "MpxDetector.hh"
+#include "ExportBase.hh"
 
 
-// ExportBase class
-class ExportBase
+#include <iostream>
+#include <string>
+
+
+/** ExportRaw class
+* 
+* this class is used to export HitsCollections to HDF5 files
+*/
+class ExportRaw : public ExportBase
 {
 public:
+    G4String filename;
     /**
-     * 
-     * 
+     * The ExportRaw constructor
      */
-    virtual void AddSingleEvents(DetectorHitsCollection *) = 0;
-    /**
-     *
-     *
-     */
-    virtual void AddSingleDigits(MpxDigitCollection *) = 0;
-    /**
-     * 
-     * 
-     */
-    virtual void Write() = 0;
-    /**
-     * 
-     * 
-     */
-    virtual void SetFilename(G4String) = 0;
+    ExportRaw();
 
-    virtual void WritePixels() = 0;
+    void AddSingleEvents(DetectorHitsCollection *);
+    void AddSingleDigits(MpxDigitCollection *DigitCollection);
+    /**
+     *  Write trajectories
+     * \param dataSetName the name of the dataset in the HDF5 file
+     * \param event the event ID
+     */
+    void Write();
+    /**
+     *  Set hdf5 file name
+     * \param name sets the name
+     */
+    void SetFilename(G4String);
 
-    virtual void CreateOutputFile() = 0;
+    void CreateOutputFile();
 
+    void WritePixels();
+
+    void SetAttributes();
+
+private:
+    /** The hits collection copy from SD */
+    DetectorHitsCollection *HitsCollectionCopy;
+    MpxDigitCollection *DigitCollectionCopy;
+
+    void CloseOutputFile();
+
+    int GetOutputFile();
 };
 
-#endif
