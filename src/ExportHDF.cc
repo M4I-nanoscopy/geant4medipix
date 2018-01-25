@@ -277,7 +277,7 @@ void ExportHDF::SetAttributes() {
     H5Awrite(att_height,H5T_NATIVE_DOUBLE,&height);
 
     // Number of pixels
-    hid_t nb_pixels = H5Acreate2 (file, "nb_pixels", H5T_NATIVE_DOUBLE, dataspace_id,
+    hid_t nb_pixels = H5Acreate2 (file, "n_pixels", H5T_NATIVE_DOUBLE, dataspace_id,
                                    H5P_DEFAULT, H5P_DEFAULT);
     H5Awrite(nb_pixels,H5T_NATIVE_DOUBLE,&nbp);
 
