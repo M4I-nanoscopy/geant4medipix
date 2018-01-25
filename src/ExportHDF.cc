@@ -186,10 +186,11 @@ void ExportHDF::WritePixels(MpxDigitCollection *dc) {
 
         Digit *d = (*dc)[i];
 
-        if (d->GetEvent() == 0) {
-            G4cout << "Found a digit with event 0. Throwing it away, not trusting it." << G4endl;
-            continue;
-        }
+        // Used to have problems with eventID 0 popping up later. Not seen it for a while
+        // if (d->GetEvent() == 0) {
+        //    G4cout << "Found a digit with event 0. Throwing it away, not trusting it." << G4endl;
+        //    continue;
+        // }
 
         // Digit collection start at 1 (hence -1)
         size_t x = (d->GetColumn() - 1)*nb + (d->GetLine() - 1);
