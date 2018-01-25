@@ -78,4 +78,4 @@
 /gps/pos/centre 0. 0. -5. mm
 /gps/direction  0 0 1
 
-/run/beamOn 100
+/run/beamOn 10

@@ -110,7 +110,7 @@ G4bool DetectorSD::ProcessHits(G4Step *step, G4TouchableHistory *)
 
     // track global time
     G4double time = 0;
-    time = step->GetPostStepPoint()->GetLocalTime();
+    time = step->GetPostStepPoint()->GetGlobalTime();
 
     // step length
     G4double stepLength = 0.;

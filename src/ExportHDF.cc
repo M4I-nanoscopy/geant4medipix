@@ -82,7 +82,7 @@ void ExportHDF::Write(DetectorHitsCollection *hc) {
         G4double y;
         G4double z;
         G4double energy;
-        G4double id;
+        G4double time;
     };
 
     // Handles
@@ -122,7 +122,7 @@ void ExportHDF::Write(DetectorHitsCollection *hc) {
                 s1[temp].y = sensorHit->GetPosition().y() / nm;
                 s1[temp].z = sensorHit->GetPosition().z() / nm;
                 s1[temp].energy = sensorHit->GetEdep() / keV;
-                s1[temp].id = sensorHit->GetParticleID();
+                s1[temp].time = sensorHit->GetTime() / picosecond;
             }
 
             G4String tableName = "/trajectories/" + std::to_string(ev);
@@ -148,6 +148,7 @@ void ExportHDF::Write(DetectorHitsCollection *hc) {
         s1[temp].y = sensorHit->GetPosition().y() / nm;
         s1[temp].z = sensorHit->GetPosition().z() / nm;
         s1[temp].energy = sensorHit->GetEdep() / keV;
+        s1[temp].time = sensorHit->GetTime() / picosecond;
         temp++;
     }
 
