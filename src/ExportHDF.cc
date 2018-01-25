@@ -109,7 +109,7 @@ void ExportHDF::Write(DetectorHitsCollection *hc) {
 
     for (size_t i = 0; i < LENGTH; i++) {
 
-        if ( i > MAX_TRAJ ) {
+        if ( i == MAX_TRAJ ) {
             G4cout << "Found a trajectory larger than max trajectory size. Throwing it away" << G4endl;
             break;
         }
