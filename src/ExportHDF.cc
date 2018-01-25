@@ -45,7 +45,7 @@
 ExportHDF::ExportHDF()
 {
     filename    = "g4medipix.h5";
-    MAX_TRAJ = 300;
+    MAX_TRAJ = 512;
 }
 
 namespace
