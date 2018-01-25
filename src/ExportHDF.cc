@@ -258,6 +258,7 @@ void ExportHDF::SetAttributes() {
     auto *det = (DetectorConstructionBase *) G4RunManager::GetRunManager()->GetUserDetectorConstruction();
 
     G4double height = det->GetSensorThickness() / nm;
+    G4double nbp = det->GetNbPixels();
     G4String mat = det->GetSensorMaterial()->GetName();
     hid_t dataspace_id = H5Screate(H5S_SCALAR);
 
@@ -273,12 +274,19 @@ void ExportHDF::SetAttributes() {
     hid_t att_height = H5Acreate2 (file, "sensor_height", H5T_NATIVE_DOUBLE, dataspace_id,
                                    H5P_DEFAULT, H5P_DEFAULT);
     H5Awrite(att_height,H5T_NATIVE_DOUBLE,&height);
+
+    // Number of pixels
+    hid_t nb_pixels = H5Acreate2 (file, "nb_pixels", H5T_NATIVE_DOUBLE, dataspace_id,
+                                   H5P_DEFAULT, H5P_DEFAULT);
+    H5Awrite(nb_pixels,H5T_NATIVE_DOUBLE,&nbp);
+
     // Sensor material
     hid_t strr = H5Tcopy (H5T_C_S1);
     H5Tset_size (strr, strlen(mat));
     hid_t att_mat = H5Acreate2(file, "sensor_material", strr, dataspace_id,
                                H5P_DEFAULT, H5P_DEFAULT);
     H5Awrite (att_mat, strr, mat);
+
     // Source
     H5Tset_size (strr, strlen("g4medipix"));
     hid_t att_source = H5Acreate2(file, "source", strr, dataspace_id,
@@ -291,6 +299,7 @@ void ExportHDF::SetAttributes() {
     H5Aclose(att_height);
     H5Aclose(att_source);
     H5Aclose(att_mat);
+    H5Aclose(nb_pixels);
     CloseOutputFile();
 }
 

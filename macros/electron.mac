@@ -50,7 +50,7 @@
 #
 /Sensor/material      G4_Si
 /Sensor/thickness     300 um
-/Sensor/pixels        15
+/Sensor/pixels        20
 /Sensor/pixelSize     55 um
 /Sensor/Update
 
@@ -78,4 +78,4 @@
 /gps/pos/centre 0. 0. -5. mm
 /gps/direction  0 0 1
 
-/run/beamOn 10
+/run/beamOn 100
