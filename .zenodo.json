@@ -1,0 +1,30 @@
+{
+  "license": "MIT License",
+  "creators": [
+    {
+      "name": "Fröjdh, Erik",
+      "affiliation": "PSD Detector Group, Paul Scherrer Institute, CH-5232 Villigen, Switzerland"
+    },
+    {
+      "name": "Kraphol, David",
+      "affiliation": "Mid Sweden University, Holmgatan 10, SE-851 70 Sundsvall, Sweden"
+    },
+    {
+      "name": "Schübel, A.",
+      "affiliation": "Mid Sweden University, Holmgatan 10, SE-851 70 Sundsvall, Sweden"
+    },
+    {
+      "name": "van Schayck, J. Paul",
+      "affiliation": "Maastricht MultiModal Molecular Imaging Institute (M4I), FHML, Maastricht University, Maastricht, The Netherlands",
+      "orcid": "https://orcid.org/0000-0001-6591-4637"
+    },
+    {
+      "name": "Roussel, Lucas",
+      "affiliation": "Maastricht MultiModal Molecular Imaging Institute (M4I), FHML, Maastricht University, Maastricht, The Netherlands"
+    }
+  ],
+  "references": [
+    "A. Schübel, D. Krapohl, E. Fröjdh, C. Fröjdh, and G. Thungström, A Geant4 based framework for pixel detector simulation, J. Instrum., vol. 9, no. 12, 2014. http://dx.doi.org/10.1088/1748-0221/9/12/C12018",
+    "D. Krapohl, A. Schubel, E. Fröjdh, G. Thungstrom, and C. Fröjdh, Validation of Geant4 Pixel Detector Simulation Framework by Measurements with the Medipix Family Detectors, IEEE Trans. Nucl. Sci., vol. 63, no. 3, pp. 1874–1881, 2016. http://dx.doi.org/10.1109/TNS.2016.2555958"
+  ]
+}
