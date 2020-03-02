@@ -1,5 +1,7 @@
 {
-  "license": "MIT License",
+  "license": {
+    "id": "MIT"
+  },
   "creators": [
     {
       "name": "Fröjdh, Erik",
@@ -26,5 +28,13 @@
   "references": [
     "A. Schübel, D. Krapohl, E. Fröjdh, C. Fröjdh, and G. Thungström, A Geant4 based framework for pixel detector simulation, J. Instrum., vol. 9, no. 12, 2014. http://dx.doi.org/10.1088/1748-0221/9/12/C12018",
     "D. Krapohl, A. Schubel, E. Fröjdh, G. Thungstrom, and C. Fröjdh, Validation of Geant4 Pixel Detector Simulation Framework by Measurements with the Medipix Family Detectors, IEEE Trans. Nucl. Sci., vol. 63, no. 3, pp. 1874–1881, 2016. http://dx.doi.org/10.1109/TNS.2016.2555958"
+  ],
+  "related_identifiers": [
+    {
+      "scheme": "doi",
+      "identifier": "10.5281/zenodo.3635923",
+      "relation": "isReferencedBy",
+      "resource_type": "dataset"
+    }
   ]
 }
